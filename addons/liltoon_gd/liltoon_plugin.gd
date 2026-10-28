@@ -284,7 +284,10 @@ func _on_bake_material() -> void:
 		var mat := _first_liltoon_material(inst)
 		if mat == null:
 			continue
-		var result = TextureBaker.bake_material(mat, int(Settings.get_value("bake_size")))
+		var bake_size := int(Settings.get_value("bake_size"))
+		if bake_size < 1:
+			bake_size = 512
+		var result = TextureBaker.bake_material(mat, bake_size)
 		baked += 1
 		for w in result["warnings"]:
 			warnings.append(w)

@@ -15,6 +15,14 @@ extends RefCounted
 ## size 为输出分辨率（正方形）。save_dir 为空则不落盘。
 static func bake_material(mat: ShaderMaterial, size: int = 512, save_dir: String = "res://addons/liltoon_gd/materials/baked") -> Dictionary:
 	var warnings := PackedStringArray()
+	# size < 1 会让下面的取模运算除零，先夹紧
+	size = clampi(size, 1, 4096)
+	if mat == null:
+		return {"image": null, "path": "", "warnings": PackedStringArray(["材质为空"])}
+	if mat.shader == null:
+		return {"image": null, "path": "", "warnings": PackedStringArray(["材质未绑定 shader"])}
+	if mat.shader.resource_path.find("liltoon_gd") < 0:
+		return {"image": null, "path": "", "warnings": PackedStringArray(["不是 liltoon_gd 主材质，跳过烘焙"])}
 	var image := Image.create(size, size, false, Image.FORMAT_RGBA8)
 	image.fill(Color(1, 1, 1, 1))
 

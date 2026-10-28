@@ -107,6 +107,7 @@ func _initialize() -> void:
 	_check(Factory.create_transparent_double().shader == Factory.TRANSPARENT_DOUBLE_SHADER, "双面透明材质 shader 应正确")
 	_check(Factory.create_transparent_premul().shader == Factory.TRANSPARENT_PREMUL_SHADER, "预乘透明材质 shader 应正确")
 
+	_check_editor_scripts()
 	_check_doc_coverage()
 	_check_preset_icons()
 	_check_p4_tools()
@@ -188,6 +189,32 @@ func _check_p4_tools() -> void:
 	_check(is_equal_approx(float(target.get_shader_parameter("specular_intensity")), 4.0), "越界参数应被夹取到上限")
 
 
+## 编译所有编辑器脚本（含 @tool 插件）。
+## 背景：liltoon_plugin.gd 是 @tool extends EditorPlugin，运行期能加载（EditorPlugin 在 ClassDB 里），
+## 但此前冒烟从不编译它，导致一处类型推断错误直到开编辑器才暴露。这里把盲区堵死。
+const EDITOR_SCRIPTS := [
+	"res://addons/liltoon_gd/liltoon_plugin.gd",
+	"res://addons/liltoon_gd/editor/liltoon_inspector_plugin.gd",
+	"res://addons/liltoon_gd/editor/liltoon_fur_tools.gd",
+	"res://addons/liltoon_gd/editor/liltoon_material_tools.gd",
+	"res://addons/liltoon_gd/editor/liltoon_texture_baker.gd",
+	"res://addons/liltoon_gd/editor/liltoon_optimizer.gd",
+	"res://addons/liltoon_gd/editor/liltoon_setting.gd",
+	"res://addons/liltoon_gd/editor/liltoon_startup.gd",
+	"res://addons/liltoon_gd/editor/liltoon_language_manager.gd",
+	"res://addons/liltoon_gd/editor/liltoon_tools.gd",
+	"res://addons/liltoon_gd/editor/preset_library.gd",
+	"res://addons/liltoon_gd/editor/shader_doc_parser.gd",
+]
+
+
+func _check_editor_scripts() -> void:
+	for path in EDITOR_SCRIPTS:
+		var script = load(path)
+		var compiled := script is GDScript and (script as GDScript).can_instantiate()
+		_check(compiled, "编辑器脚本应可编译：%s" % path.get_file())
+
+
 func _check_editor_tools() -> void:
 	# 纹理烘焙器：烘一张小图，确认参数被重置为恒等
 	var bake_mat := Factory.create_opaque()
@@ -199,6 +226,13 @@ func _check_editor_tools() -> void:
 	_check(bake_mat.get_shader_parameter("use_decal") == false, "烘焙后贴花应关闭")
 	var img: Image = bake_result["image"]
 	_check(img.get_width() == 32, "烘焙尺寸应符合要求")
+
+	# 边界用例：size=0 不应除零崩溃、空材质应优雅返回
+	var zero_result = TextureBaker.bake_material(Factory.create_opaque(), 0, "")
+	_check(zero_result["image"] is Image, "size=0 应被夹紧而非崩溃")
+	var null_result = TextureBaker.bake_material(null, 32, "")
+	_check(null_result["image"] == null, "空材质应优雅返回")
+	_check(Optimizer.analyze(null).is_empty(), "优化器应对空材质返回空建议")
 
 	# 优化器：关闭的开关 + 已设贴图 → 应给出建议
 	var opt_mat := Factory.create_opaque()
