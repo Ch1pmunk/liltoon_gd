@@ -15,10 +15,6 @@ run/main_scene="res://addons/liltoon_gd/demo/showcase.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 run/max_fps=30
 
-[autoload]
-
-MCPRuntimeProbe="*uid://bsg12huaf1u5i"
-
 [display]
 
 window/size/viewport_width=540
@@ -33,7 +29,7 @@ project/assembly_name="新建游戏项目"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg", "res://addons/liltoon_gd/plugin.cfg")
+enabled=PackedStringArray("res://addons/liltoon_gd/plugin.cfg")
 
 [liltoon_gd]
 

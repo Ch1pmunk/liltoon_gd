@@ -250,7 +250,7 @@
 - [x] 命名/默认值语义对齐，可映射 liltoon 预设（2026-10-28 完成：默认值差异 20→0，3 个 `*_enable_lighting` 默认值修正、`_MatCapMainStrength` 语义修正、3 个 bool→float 程度值）
 - [x] 迁移指南与文档（2026-10-28：`docs/迁移指南.md` 三条迁移路径 + 参数对照 + 不支持项分类 + 已知差异 + 排查表）
 - [x] 全量回归场景（2026-10-28：回归由多 lab 分担，`docs/发布检查清单.md` 把自动检查 / 人工目视 / 换机待验串成流程；`showcase.tscn` 作为整体观感入口）
-- [x] 发布 v1.0（2026-10-28：`plugin.cfg` 版本 0.1.0→1.0.0、描述去掉"P0 核心版"；补 `addons/liltoon_gd/README.md`；清理 `docs/参数对齐矩阵.md.bak`；最终检查冒烟 / 默认值 / 矩阵三项全绿）
+- [x] 发布 v1.0（2026-10-28：`plugin.cfg` 版本 0.1.0→1.0.0、描述去掉"P0 核心版"；补 `README.md`；清理 `docs/参数对齐矩阵.md.bak`；最终检查冒烟 / 默认值 / 矩阵三项全绿）
 - [x] P9 产出自审（2026-10-28 补做）：修 12 处 `.tscn` 过时参数值（bool/null → float）、`rim_lab.gd` 传参类型、补 `LiltoonPresetImport` 的 `class_name`、修正迁移指南类名与 5 处数字、`plugin.cfg` 去掉误导的"三槽"；详见 `docs/自审报告_2026-10-28.md` 追加章节
 - [x] 发布前静态全量审计（2026-10-28）：新增 `tools/audit_release.py`，资源路径 / 类名唯一性 / 插件入口 / 文档死链 / 未完成标记**全部 0**；修正 2 处过时数字（变体 13→17、矩阵 433/239/277→465/280/200）
 - [x] 补 `effects/` 编译验证缺口（2026-10-28）：`compile_check.gd` 改为扫描 `shaders/` + `effects/` 两个目录，**追加在末尾**保证前 23 个索引不变；`check_all_shaders.ps1` 默认范围 22→24；用 `--headless --list` 确认索引顺序正确（23、24 为后处理）。**2026-10-29 换机后已实跑**：25/25 全部 `OK`（23 个主材质/描边 + 2 个后处理），日志 `docs/evidence/compile_check.log`

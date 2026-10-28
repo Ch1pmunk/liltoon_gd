@@ -1,6 +1,13 @@
 # Godot 生成的导入缓存（机器相关，不入库）
 .godot/
 
+# MCP 开发工具（gdmcp CLI 二进制 + godot_mcp 插件），不随插件分发
+.gdmcp/
+addons/godot_mcp/
+
+# 项目内部文档（对照表 / 矩阵 / 交接记录），不公开
+docs/
+
 # Python
 __pycache__/
 *.py[cod]

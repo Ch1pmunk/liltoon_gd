@@ -1,3 +1,0 @@
-high=151 FPS, 6.63 ms
-medium=145 FPS, 6.89 ms
-low=145 FPS, 6.91 ms

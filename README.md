@@ -3,14 +3,15 @@
 > **liltoon_gd** 是 [lilToon](https://github.com/lilxyzw/lilToon)（Unity 版卡通渲染）的 **Godot 4 非官方移植**。
 > 目标是让 Unity 用户能几乎无损地把 lilToon 材质搬进 Godot。
 >
-> **许可证**：本项目采用 **MIT License**（Copyright (c) 2026 Ch1pmunk_Z），见仓库根目录 [`LICENSE`](../../../LICENSE)。
+> **许可证**：本项目采用 **MIT License**（Copyright (c) 2026 Ch1pmunk_Z），见 [`LICENSE`](LICENSE)。
 > 实现参考了 lilToon（MIT，Copyright 2020-2024 lilxyzw），
-> 相关声明与原始许可证全文见 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。
+> 相关声明与原始许可证全文见 [`addons/liltoon_gd/THIRD_PARTY_NOTICES.md`](addons/liltoon_gd/THIRD_PARTY_NOTICES.md)。
 > 对外分发时**必须一并保留该文件**。
 >
 > **本项目是非官方移植**，与 lilToon 作者无隶属关系。名称中的 `_gd` 用于区分平台。
 >
-> **功能覆盖情况**见 [`docs/功能对照表.md`](../../docs/功能对照表.md)（逐项标注完美复刻/稍有妥协/根本没做）。
+> **功能覆盖情况**：lilToon 的 578 项材质属性中已对齐 336 项，剩余为 Unity 渲染状态 / VR / 引擎机制限制。
+> 逐项标注「完美复刻 / 稍有妥协 / 阉割严重 / 根本没做」的功能对照表与参数矩阵在开发仓库的 `docs/` 中维护，不随本仓库分发。
 
 ---
 
@@ -37,7 +38,7 @@
 2. `项目设置 → 插件` 里启用 **liltoon_gd**
 3. 重启编辑器（让启动检查生效）
 
-无需其他依赖。`addons/godot_mcp/` 是开发辅助工具，运行时不需要，可删。
+无需其他依赖。
 
 ---
 
@@ -220,11 +221,11 @@ A2C 用 `set_alpha_to_mask()` 或面板开关。
 
 ## 七、从 lilToon 迁移
 
-三条路径（详见 [`docs/迁移指南.md`](../../docs/迁移指南.md)）：
+三条路径：
 
 1. **转换器**（推荐）：选中 Unity 导入的 `StandardMaterial3D` 或 lilToon 材质 → 工具菜单「转换」。会映射 127 条别名 + 蛇形自动匹配。
 2. **预设导入**：`LiltoonPresetImport.parse_file()` 解析 Unity `.asset` 预设（colors/vectors/floats；textures 需手动重挂）。
-3. **手动映射**：对照 [`docs/参数对齐矩阵.md`](../../docs/参数对齐矩阵.md) 逐项设置。
+3. **手动映射**：对照参数对齐矩阵（开发仓库 `docs/`）逐项设置。
 
 **转换器不转换的项**（会逐项提示）：Clearcoat / Refraction / Anisotropy（Unity 特有）、屏幕空间 SSS（映射为透射 SSS）。
 
@@ -291,17 +292,20 @@ godot --path . -s res://tools/depth_probe.gd -- variant=edge
 
 ---
 
-## 十一、文档地图
+## 十一、文档
+
+仓库内文档：
 
 | 文档 | 内容 |
 |---|---|
-| [`docs/功能对照表.md`](../../docs/功能对照表.md) | **lilToon ↔ liltoon_gd 全量功能对照**，逐项标注复刻程度 |
-| [`docs/参数对齐矩阵.md`](../../docs/参数对齐矩阵.md) | 578 项属性逐项对照（可脚本重算） |
-| [`docs/迁移指南.md`](../../docs/迁移指南.md) | 从 lilToon 迁移的三条路径 + 参数对照 + 不支持项 |
-| [`docs/交接文档.md`](../../docs/交接文档.md) | 项目现状、欠账、环境限制、执行顺序 |
-| [`docs/发布检查清单.md`](../../docs/发布检查清单.md) | 发版前的自动检查与人工目视流程 |
-| [`DEVELOPMENT_PRINCIPLES.md`](DEVELOPMENT_PRINCIPLES.md) | 开发原则 + §9 每条实现的对齐判定与差异 |
-| [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) | lilToon MIT 声明（**分发必须保留**） |
+| [`addons/liltoon_gd/DEVELOPMENT_PRINCIPLES.md`](addons/liltoon_gd/DEVELOPMENT_PRINCIPLES.md) | 开发原则 + §9 每条实现的对齐判定与差异 |
+| [`addons/liltoon_gd/THIRD_PARTY_NOTICES.md`](addons/liltoon_gd/THIRD_PARTY_NOTICES.md) | lilToon MIT 声明（**分发必须保留**） |
+| [`ROADMAP.md`](ROADMAP.md) | 阶段历史、SCOPE LOG、风险记录 |
+| [`移植说明.md`](移植说明.md) | 迁移包说明 |
+
+**不随本仓库分发**（开发仓库 `docs/` 维护）：功能对照表（lilToon ↔ liltoon_gd 逐项复刻程度）、
+参数对齐矩阵（578 项属性对照）、迁移指南、交接文档、发布检查清单、证据截图。
+需要这些文档请参考 `tools/` 下的生成脚本（可自行重算对齐矩阵）。
 
 ---
 
