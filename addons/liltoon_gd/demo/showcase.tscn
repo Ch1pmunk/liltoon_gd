@@ -1,0 +1,503 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://addons/liltoon_gd/materials/preset_default.tres" id="1_qxegu"]
+[ext_resource type="Material" path="res://addons/liltoon_gd/materials/preset_skin.tres" id="2_1rpf0"]
+[ext_resource type="Material" path="res://addons/liltoon_gd/materials/preset_hair.tres" id="3_otngx"]
+[ext_resource type="Material" path="res://addons/liltoon_gd/materials/preset_cloth.tres" id="4_yq424"]
+[ext_resource type="Material" path="res://addons/liltoon_gd/materials/preset_metal.tres" id="5_gegxp"]
+[ext_resource type="Shader" path="res://addons/liltoon_gd/shaders/liltoon_cutout.gdshader" id="6_mjbe0"]
+[ext_resource type="Shader" path="res://addons/liltoon_gd/shaders/liltoon_transparent.gdshader" id="7_gb243"]
+[ext_resource type="Shader" path="res://addons/liltoon_gd/shaders/liltoon_opaque.gdshader" id="8_uvaei"]
+
+[sub_resource type="Environment" id="Environment_lny8s"]
+background_mode = 1
+background_color = Color(0.15, 0.17, 0.22, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.62, 0.8, 1)
+ambient_light_energy = 0.12
+tonemap_mode = 2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_iji3f"]
+albedo_color = Color(0.16, 0.17, 0.2, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_qjrfb"]
+size = Vector2(20, 12)
+
+[sub_resource type="SphereMesh" id="SphereMesh_1fpra"]
+radial_segments = 48
+rings = 24
+
+[sub_resource type="SphereMesh" id="SphereMesh_1wqfg"]
+radial_segments = 48
+rings = 24
+
+[sub_resource type="SphereMesh" id="SphereMesh_lphot"]
+radial_segments = 48
+rings = 24
+
+[sub_resource type="SphereMesh" id="SphereMesh_n6e17"]
+radial_segments = 48
+rings = 24
+
+[sub_resource type="SphereMesh" id="SphereMesh_pi44e"]
+radial_segments = 48
+rings = 24
+
+[sub_resource type="Gradient" id="Gradient_48oug"]
+offsets = PackedFloat32Array(0, 1, 0.62, 0.72)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_t4324"]
+gradient = SubResource("Gradient_48oug")
+width = 128
+height = 128
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ti000"]
+render_priority = 0
+shader = ExtResource("6_mjbe0")
+shader_parameter/main_color = Color(0.85, 0.52, 0.5, 1)
+shader_parameter/use_main_texture = true
+shader_parameter/main_texture = SubResource("GradientTexture2D_t4324")
+shader_parameter/main_uv_scale = null
+shader_parameter/alpha_cutoff = 0.5
+shader_parameter/main_opacity = null
+shader_parameter/use_vertex_color = null
+shader_parameter/vertex_color_strength = null
+shader_parameter/use_triplanar = null
+shader_parameter/triplanar_scale = null
+shader_parameter/use_parallax = null
+shader_parameter/parallax_height = null
+shader_parameter/shade_color = Color(0.4, 0.2, 0.26, 1)
+shader_parameter/shade_threshold = null
+shader_parameter/shade_blur = null
+shader_parameter/use_shade_ramp = null
+shader_parameter/shade_ramp_strength = null
+shader_parameter/use_shade_2nd = null
+shader_parameter/shade_2nd_color = null
+shader_parameter/shade_2nd_threshold = null
+shader_parameter/use_shade_3rd = null
+shader_parameter/shade_3rd_color = null
+shader_parameter/shade_3rd_threshold = null
+shader_parameter/shading_shift = null
+shader_parameter/shadow_strength = null
+shader_parameter/use_sss = null
+shader_parameter/sss_color = null
+shader_parameter/sss_strength = null
+shader_parameter/sss_power = null
+shader_parameter/use_normal_map = null
+shader_parameter/normal_strength = null
+shader_parameter/use_normal_map_2nd = null
+shader_parameter/normal_strength_2nd = null
+shader_parameter/use_specular = null
+shader_parameter/specular_color = null
+shader_parameter/specular_intensity = null
+shader_parameter/specular_size = null
+shader_parameter/specular_smoothness = null
+shader_parameter/use_specular_2nd = null
+shader_parameter/specular_2nd_color = null
+shader_parameter/specular_2nd_intensity = null
+shader_parameter/specular_2nd_size = null
+shader_parameter/specular_2nd_smoothness = null
+shader_parameter/use_specular_3rd = null
+shader_parameter/specular_3rd_color = null
+shader_parameter/specular_3rd_intensity = null
+shader_parameter/specular_3rd_size = null
+shader_parameter/specular_3rd_shift = null
+shader_parameter/use_rim = null
+shader_parameter/rim_color = null
+shader_parameter/rim_intensity = null
+shader_parameter/rim_power = null
+shader_parameter/use_rim_2nd = null
+shader_parameter/rim_2nd_color = null
+shader_parameter/use_rim_mask = null
+shader_parameter/rim_mask_uv_scale = null
+shader_parameter/rim_mask_threshold = null
+shader_parameter/rim_light_mode = null
+shader_parameter/use_matcap = null
+shader_parameter/matcap_color = null
+shader_parameter/matcap_intensity = null
+shader_parameter/matcap_multiply = null
+shader_parameter/use_matcap_2nd = null
+shader_parameter/matcap_2nd_color = null
+shader_parameter/matcap_2nd_intensity = null
+shader_parameter/matcap_2nd_multiply = null
+shader_parameter/use_matcap_3rd = null
+shader_parameter/matcap_3rd_color = null
+shader_parameter/matcap_3rd_intensity = null
+shader_parameter/matcap_3rd_multiply = null
+shader_parameter/use_matcap_mask = null
+shader_parameter/matcap_mask_uv_scale = null
+shader_parameter/matcap_mask_threshold = null
+shader_parameter/emission_color = null
+shader_parameter/use_emission_texture = null
+shader_parameter/emission_intensity = null
+shader_parameter/use_ao_map = null
+shader_parameter/ao_strength = null
+shader_parameter/ao_light_affect = null
+shader_parameter/use_vertex_color_ao = null
+shader_parameter/ambient_color = null
+shader_parameter/ambient_strength = null
+shader_parameter/use_reflection = null
+shader_parameter/metallic = null
+shader_parameter/roughness = null
+shader_parameter/cast_shadow = null
+shader_parameter/depth_offset = null
+
+[sub_resource type="SphereMesh" id="SphereMesh_w4ni4"]
+radius = 0.28
+height = 0.56
+radial_segments = 32
+rings = 16
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_iwjh6"]
+render_priority = 0
+shader = ExtResource("7_gb243")
+shader_parameter/main_color = Color(0.35, 0.75, 0.8, 1)
+shader_parameter/use_main_texture = null
+shader_parameter/main_uv_scale = null
+shader_parameter/alpha_cutoff = null
+shader_parameter/main_opacity = 0.5
+shader_parameter/use_vertex_color = null
+shader_parameter/vertex_color_strength = null
+shader_parameter/use_triplanar = null
+shader_parameter/triplanar_scale = null
+shader_parameter/use_parallax = null
+shader_parameter/parallax_height = null
+shader_parameter/shade_color = Color(0.12, 0.35, 0.42, 1)
+shader_parameter/shade_threshold = null
+shader_parameter/shade_blur = null
+shader_parameter/use_shade_ramp = null
+shader_parameter/shade_ramp_strength = null
+shader_parameter/use_shade_2nd = null
+shader_parameter/shade_2nd_color = null
+shader_parameter/shade_2nd_threshold = null
+shader_parameter/use_shade_3rd = null
+shader_parameter/shade_3rd_color = null
+shader_parameter/shade_3rd_threshold = null
+shader_parameter/shading_shift = null
+shader_parameter/shadow_strength = null
+shader_parameter/use_sss = null
+shader_parameter/sss_color = null
+shader_parameter/sss_strength = null
+shader_parameter/sss_power = null
+shader_parameter/use_normal_map = null
+shader_parameter/normal_strength = null
+shader_parameter/use_normal_map_2nd = null
+shader_parameter/normal_strength_2nd = null
+shader_parameter/use_specular = false
+shader_parameter/specular_color = null
+shader_parameter/specular_intensity = null
+shader_parameter/specular_size = null
+shader_parameter/specular_smoothness = null
+shader_parameter/use_specular_2nd = null
+shader_parameter/specular_2nd_color = null
+shader_parameter/specular_2nd_intensity = null
+shader_parameter/specular_2nd_size = null
+shader_parameter/specular_2nd_smoothness = null
+shader_parameter/use_specular_3rd = null
+shader_parameter/specular_3rd_color = null
+shader_parameter/specular_3rd_intensity = null
+shader_parameter/specular_3rd_size = null
+shader_parameter/specular_3rd_shift = null
+shader_parameter/use_rim = null
+shader_parameter/rim_color = null
+shader_parameter/rim_intensity = null
+shader_parameter/rim_power = null
+shader_parameter/use_rim_2nd = null
+shader_parameter/rim_2nd_color = null
+shader_parameter/use_rim_mask = null
+shader_parameter/rim_mask_uv_scale = null
+shader_parameter/rim_mask_threshold = null
+shader_parameter/rim_light_mode = null
+shader_parameter/use_matcap = null
+shader_parameter/matcap_color = null
+shader_parameter/matcap_intensity = null
+shader_parameter/matcap_multiply = null
+shader_parameter/use_matcap_2nd = null
+shader_parameter/matcap_2nd_color = null
+shader_parameter/matcap_2nd_intensity = null
+shader_parameter/matcap_2nd_multiply = null
+shader_parameter/use_matcap_3rd = null
+shader_parameter/matcap_3rd_color = null
+shader_parameter/matcap_3rd_intensity = null
+shader_parameter/matcap_3rd_multiply = null
+shader_parameter/use_matcap_mask = null
+shader_parameter/matcap_mask_uv_scale = null
+shader_parameter/matcap_mask_threshold = null
+shader_parameter/emission_color = null
+shader_parameter/use_emission_texture = null
+shader_parameter/emission_intensity = null
+shader_parameter/use_ao_map = null
+shader_parameter/ao_strength = null
+shader_parameter/ao_light_affect = null
+shader_parameter/use_vertex_color_ao = null
+shader_parameter/ambient_color = null
+shader_parameter/ambient_strength = null
+shader_parameter/use_reflection = null
+shader_parameter/metallic = null
+shader_parameter/roughness = null
+shader_parameter/cast_shadow = null
+shader_parameter/depth_offset = null
+
+[sub_resource type="SphereMesh" id="SphereMesh_7k3w0"]
+radius = 0.28
+height = 0.56
+radial_segments = 32
+rings = 16
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_xqps3"]
+radius = 0.32
+height = 1.1
+radial_segments = 24
+
+[sub_resource type="SphereMesh" id="SphereMesh_c81lo"]
+radius = 0.28
+height = 0.62
+radial_segments = 32
+rings = 16
+
+[sub_resource type="SphereMesh" id="SphereMesh_cernr"]
+radius = 0.31
+height = 0.5
+radial_segments = 32
+rings = 16
+is_hemisphere = true
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_rs5c1"]
+radius = 0.08
+height = 0.72
+radial_segments = 24
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_n3n7c"]
+radius = 0.08
+height = 0.72
+radial_segments = 24
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_8fw7a"]
+radius = 0.1
+height = 0.62
+radial_segments = 24
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_i76w6"]
+radius = 0.1
+height = 0.62
+radial_segments = 24
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0njp1"]
+render_priority = 0
+shader = ExtResource("8_uvaei")
+shader_parameter/main_color = Color(0.08, 0.09, 0.12, 1)
+shader_parameter/use_main_texture = null
+shader_parameter/main_uv_scale = null
+shader_parameter/alpha_cutoff = null
+shader_parameter/main_opacity = null
+shader_parameter/use_vertex_color = null
+shader_parameter/vertex_color_strength = null
+shader_parameter/use_triplanar = null
+shader_parameter/triplanar_scale = null
+shader_parameter/use_parallax = null
+shader_parameter/parallax_height = null
+shader_parameter/shade_color = Color(0.04, 0.05, 0.07, 1)
+shader_parameter/shade_threshold = null
+shader_parameter/shade_blur = null
+shader_parameter/use_shade_ramp = null
+shader_parameter/shade_ramp_strength = null
+shader_parameter/use_shade_2nd = null
+shader_parameter/shade_2nd_color = null
+shader_parameter/shade_2nd_threshold = null
+shader_parameter/use_shade_3rd = null
+shader_parameter/shade_3rd_color = null
+shader_parameter/shade_3rd_threshold = null
+shader_parameter/shading_shift = null
+shader_parameter/shadow_strength = null
+shader_parameter/use_sss = null
+shader_parameter/sss_color = null
+shader_parameter/sss_strength = null
+shader_parameter/sss_power = null
+shader_parameter/use_normal_map = null
+shader_parameter/normal_strength = null
+shader_parameter/use_normal_map_2nd = null
+shader_parameter/normal_strength_2nd = null
+shader_parameter/use_specular = false
+shader_parameter/specular_color = null
+shader_parameter/specular_intensity = null
+shader_parameter/specular_size = null
+shader_parameter/specular_smoothness = null
+shader_parameter/use_specular_2nd = null
+shader_parameter/specular_2nd_color = null
+shader_parameter/specular_2nd_intensity = null
+shader_parameter/specular_2nd_size = null
+shader_parameter/specular_2nd_smoothness = null
+shader_parameter/use_specular_3rd = null
+shader_parameter/specular_3rd_color = null
+shader_parameter/specular_3rd_intensity = null
+shader_parameter/specular_3rd_size = null
+shader_parameter/specular_3rd_shift = null
+shader_parameter/use_rim = false
+shader_parameter/rim_color = null
+shader_parameter/rim_intensity = null
+shader_parameter/rim_power = null
+shader_parameter/use_rim_2nd = null
+shader_parameter/rim_2nd_color = null
+shader_parameter/use_rim_mask = null
+shader_parameter/rim_mask_uv_scale = null
+shader_parameter/rim_mask_threshold = null
+shader_parameter/rim_light_mode = null
+shader_parameter/use_matcap = null
+shader_parameter/matcap_color = null
+shader_parameter/matcap_intensity = null
+shader_parameter/matcap_multiply = null
+shader_parameter/use_matcap_2nd = null
+shader_parameter/matcap_2nd_color = null
+shader_parameter/matcap_2nd_intensity = null
+shader_parameter/matcap_2nd_multiply = null
+shader_parameter/use_matcap_3rd = null
+shader_parameter/matcap_3rd_color = null
+shader_parameter/matcap_3rd_intensity = null
+shader_parameter/matcap_3rd_multiply = null
+shader_parameter/use_matcap_mask = null
+shader_parameter/matcap_mask_uv_scale = null
+shader_parameter/matcap_mask_threshold = null
+shader_parameter/emission_color = null
+shader_parameter/use_emission_texture = null
+shader_parameter/emission_intensity = null
+shader_parameter/use_ao_map = null
+shader_parameter/ao_strength = null
+shader_parameter/ao_light_affect = null
+shader_parameter/use_vertex_color_ao = null
+shader_parameter/ambient_color = null
+shader_parameter/ambient_strength = null
+shader_parameter/use_reflection = null
+shader_parameter/metallic = null
+shader_parameter/roughness = null
+shader_parameter/cast_shadow = null
+shader_parameter/depth_offset = null
+
+[sub_resource type="SphereMesh" id="SphereMesh_btl16"]
+radius = 0.035
+height = 0.07
+radial_segments = 32
+rings = 16
+
+[sub_resource type="SphereMesh" id="SphereMesh_rw1ew"]
+radius = 0.035
+height = 0.07
+radial_segments = 32
+rings = 16
+
+[node name="Showcase" type="Node3D" unique_id=52690647]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=635496689]
+environment = SubResource("Environment_lny8s")
+
+[node name="KeyLight" type="DirectionalLight3D" parent="." unique_id=323622644]
+transform = Transform3D(0.8480481, 0.3545852, -0.39380676, 0, 0.7431448, 0.6691306, 0.52991927, -0.56745493, 0.63022256, 0, 0, 0)
+light_color = Color(1, 0.96, 0.9, 1)
+light_energy = 1.1
+shadow_enabled = true
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=864250420]
+transform = Transform3D(1, 0, 0, 0, 0.9945219, 0.104528464, 0, -0.104528464, 0.9945219, 0, 1.55, 5.4)
+fov = 50.0
+
+[node name="Ground" type="MeshInstance3D" parent="." unique_id=269834244]
+material_override = SubResource("StandardMaterial3D_iji3f")
+mesh = SubResource("PlaneMesh_qjrfb")
+
+[node name="Sphere_preset_default" type="MeshInstance3D" parent="." unique_id=1638863268]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.6, 1, 0)
+material_override = ExtResource("1_qxegu")
+mesh = SubResource("SphereMesh_1fpra")
+
+[node name="Sphere_preset_skin" type="MeshInstance3D" parent="." unique_id=2144783249]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7, 1, 0)
+material_override = ExtResource("2_1rpf0")
+mesh = SubResource("SphereMesh_1wqfg")
+
+[node name="Sphere_preset_hair" type="MeshInstance3D" parent="." unique_id=734140208]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 1, 0)
+material_override = ExtResource("3_otngx")
+mesh = SubResource("SphereMesh_lphot")
+
+[node name="Sphere_preset_cloth" type="MeshInstance3D" parent="." unique_id=1724776932]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 1, 0)
+material_override = ExtResource("4_yq424")
+mesh = SubResource("SphereMesh_n6e17")
+
+[node name="Sphere_preset_metal" type="MeshInstance3D" parent="." unique_id=172381847]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+material_override = ExtResource("5_gegxp")
+mesh = SubResource("SphereMesh_pi44e")
+
+[node name="FillLights" type="Node3D" parent="." unique_id=1654803932]
+
+[node name="BlueOmni" type="OmniLight3D" parent="FillLights" unique_id=1014599378]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.2, 2.2, 1.6)
+light_color = Color(0.45, 0.6, 1, 1)
+light_energy = 1.6
+omni_range = 3.5
+
+[node name="WarmSpot" type="SpotLight3D" parent="FillLights" unique_id=1055683127]
+transform = Transform3D(0.9781476, -0.1592696, 0.13364308, 0, 0.64278764, 0.76604444, -0.2079117, -0.74930453, 0.6287412, 2.8, 3.2, 2)
+light_color = Color(1, 0.75, 0.55, 1)
+light_energy = 2.5
+spot_range = 6.0
+spot_angle = 35.0
+
+[node name="SampleCutout" type="MeshInstance3D" parent="." unique_id=139207695]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 0.55, 0.6)
+material_override = SubResource("ShaderMaterial_ti000")
+mesh = SubResource("SphereMesh_w4ni4")
+
+[node name="SampleTransparent" type="MeshInstance3D" parent="." unique_id=624321137]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.25, 0.55, 0.6)
+material_override = SubResource("ShaderMaterial_iwjh6")
+mesh = SubResource("SphereMesh_7k3w0")
+
+[node name="Character" type="Node3D" parent="." unique_id=773321659]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4, 0, 0)
+
+[node name="Body" type="MeshInstance3D" parent="Character" unique_id=170551626]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
+material_override = ExtResource("4_yq424")
+mesh = SubResource("CapsuleMesh_xqps3")
+
+[node name="Head" type="MeshInstance3D" parent="Character" unique_id=61835325]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
+material_override = ExtResource("2_1rpf0")
+mesh = SubResource("SphereMesh_c81lo")
+
+[node name="Hair" type="MeshInstance3D" parent="Character" unique_id=1677293290]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.95, -0.02)
+material_override = ExtResource("3_otngx")
+mesh = SubResource("SphereMesh_cernr")
+
+[node name="ArmLeft" type="MeshInstance3D" parent="Character" unique_id=36784500]
+transform = Transform3D(0.9781476, -0.2079117, 0, 0.2079117, 0.9781476, 0, 0, 0, 1, -0.42, 1.22, 0)
+material_override = ExtResource("4_yq424")
+mesh = SubResource("CapsuleMesh_rs5c1")
+
+[node name="ArmRight" type="MeshInstance3D" parent="Character" unique_id=1233823601]
+transform = Transform3D(0.9781476, 0.2079117, 0, -0.2079117, 0.9781476, 0, 0, 0, 1, 0.42, 1.22, 0)
+material_override = ExtResource("4_yq424")
+mesh = SubResource("CapsuleMesh_n3n7c")
+
+[node name="LegLeft" type="MeshInstance3D" parent="Character" unique_id=1325168745]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.31, 0)
+material_override = ExtResource("4_yq424")
+mesh = SubResource("CapsuleMesh_8fw7a")
+
+[node name="LegRight" type="MeshInstance3D" parent="Character" unique_id=1594597259]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.31, 0)
+material_override = ExtResource("4_yq424")
+mesh = SubResource("CapsuleMesh_i76w6")
+
+[node name="EyeLeft" type="MeshInstance3D" parent="Character" unique_id=807496201]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 1.78, 0.255)
+material_override = SubResource("ShaderMaterial_0njp1")
+mesh = SubResource("SphereMesh_btl16")
+
+[node name="EyeRight" type="MeshInstance3D" parent="Character" unique_id=1441677578]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 1.78, 0.255)
+material_override = SubResource("ShaderMaterial_0njp1")
+mesh = SubResource("SphereMesh_rw1ew")

@@ -1,0 +1,180 @@
+[gd_scene format=3 uid="uid://be8ffkdt6qjfy"]
+
+[ext_resource type="Shader" uid="uid://dqq5jbk27477u" path="res://addons/liltoon_gd/shaders/liltoon_opaque.gdshader" id="1_8wxpo"]
+[ext_resource type="Script" path="res://addons/liltoon_gd/demo/lightmap_bake_lab.gd" id="1_op6yp"]
+[ext_resource type="ArrayMesh" path="res://addons/liltoon_gd/demo/lightmap_quad.tres" id="2_op6yp"]
+[ext_resource type="LightmapGIData" path="res://addons/liltoon_gd/demo/lightmap_bake_lab.lmbake" id="3_lmbake"]
+
+[sub_resource type="Environment" id="Environment_3ncl8"]
+background_mode = 1
+background_color = Color(0.08, 0.09, 0.12, 1)
+ambient_light_source = 1
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_b40fr"]
+render_priority = 0
+shader = ExtResource("1_8wxpo")
+shader_parameter/main_color = Color(1, 1, 1, 1)
+shader_parameter/use_main_texture = false
+shader_parameter/main_uv_scale = Vector2(1, 1)
+shader_parameter/alpha_cutoff = 0.5
+shader_parameter/main_opacity = 1.0
+shader_parameter/use_vertex_color = false
+shader_parameter/vertex_color_strength = 1.0
+shader_parameter/use_triplanar = false
+shader_parameter/triplanar_scale = 1.0
+shader_parameter/use_parallax = false
+shader_parameter/parallax_height = 0.02
+shader_parameter/shade_color = Color(1, 1, 1, 1)
+shader_parameter/shade_threshold = 0.5
+shader_parameter/shade_blur = 0.01
+shader_parameter/use_shade_ramp = false
+shader_parameter/shade_ramp_strength = 1.0
+shader_parameter/use_shade_2nd = false
+shader_parameter/shade_2nd_color = Color(0.32, 0.22, 0.28, 1)
+shader_parameter/shade_2nd_threshold = 0.1
+shader_parameter/use_shade_3rd = false
+shader_parameter/shade_3rd_color = Color(0.18, 0.12, 0.16, 1)
+shader_parameter/shade_3rd_threshold = -0.2
+shader_parameter/shading_shift = 0.0
+shader_parameter/shadow_strength = 1.0
+shader_parameter/use_sss = false
+shader_parameter/sss_color = Color(1, 0.45, 0.38, 1)
+shader_parameter/sss_strength = 0.6
+shader_parameter/sss_power = 2.5
+shader_parameter/use_normal_map = false
+shader_parameter/normal_strength = 1.0
+shader_parameter/use_normal_map_2nd = false
+shader_parameter/normal_strength_2nd = 1.0
+shader_parameter/use_specular = false
+shader_parameter/specular_color = Color(1, 1, 1, 1)
+shader_parameter/specular_intensity = 0.35
+shader_parameter/specular_size = 0.25
+shader_parameter/specular_smoothness = 0.01
+shader_parameter/use_specular_2nd = false
+shader_parameter/specular_2nd_color = Color(1, 0.82, 0.9, 1)
+shader_parameter/specular_2nd_intensity = 0.5
+shader_parameter/specular_2nd_size = 0.15
+shader_parameter/specular_2nd_smoothness = 0.01
+shader_parameter/use_specular_3rd = false
+shader_parameter/specular_3rd_color = Color(0.85, 0.9, 1, 1)
+shader_parameter/specular_3rd_intensity = 1.0
+shader_parameter/specular_3rd_size = 0.35
+shader_parameter/specular_3rd_shift = 0.0
+shader_parameter/use_rim = false
+shader_parameter/rim_color = Color(1, 0.95, 0.9, 1)
+shader_parameter/rim_intensity = 0.8
+shader_parameter/rim_power = 4.0
+shader_parameter/use_rim_2nd = false
+shader_parameter/rim_2nd_color = Color(0.6, 0.72, 1, 1)
+shader_parameter/use_rim_mask = false
+shader_parameter/rim_mask_uv_scale = Vector2(1, 1)
+shader_parameter/rim_mask_threshold = 0.5
+shader_parameter/rim_light_mode = 0
+shader_parameter/use_matcap = false
+shader_parameter/matcap_color = Color(1, 1, 1, 1)
+shader_parameter/matcap_intensity = 1.0
+shader_parameter/matcap_multiply = false
+shader_parameter/use_matcap_2nd = false
+shader_parameter/matcap_2nd_color = Color(1, 1, 1, 1)
+shader_parameter/matcap_2nd_intensity = 1.0
+shader_parameter/matcap_2nd_multiply = false
+shader_parameter/use_matcap_3rd = false
+shader_parameter/matcap_3rd_color = Color(1, 1, 1, 1)
+shader_parameter/matcap_3rd_intensity = 1.0
+shader_parameter/matcap_3rd_multiply = false
+shader_parameter/use_matcap_mask = false
+shader_parameter/matcap_mask_uv_scale = Vector2(1, 1)
+shader_parameter/matcap_mask_threshold = 0.5
+shader_parameter/emission_color = Color(0, 0, 0, 1)
+shader_parameter/use_emission_texture = false
+shader_parameter/emission_intensity = 1.0
+shader_parameter/use_ao_map = false
+shader_parameter/ao_strength = 1.0
+shader_parameter/ao_light_affect = 0.0
+shader_parameter/use_vertex_color_ao = false
+shader_parameter/ambient_color = Color(0, 0, 0, 1)
+shader_parameter/ambient_strength = 0.0
+shader_parameter/use_reflection = false
+shader_parameter/metallic = 0.0
+shader_parameter/roughness = 0.5
+shader_parameter/cast_shadow = true
+shader_parameter/depth_offset = 0.0
+shader_parameter/light_min_limit = 0.05
+shader_parameter/light_max_limit = 1.0
+shader_parameter/use_dissolve = false
+shader_parameter/dissolve_noise_strength = 0.1
+shader_parameter/dissolve_noise_uv_scale = Vector2(1, 1)
+shader_parameter/dissolve_noise_scroll = Vector2(0, 0)
+shader_parameter/dissolve_mode = 0
+shader_parameter/dissolve_shape = 0
+shader_parameter/dissolve_border = 0.5
+shader_parameter/dissolve_blur = 0.1
+shader_parameter/dissolve_position = Vector3(0, 0, 0)
+shader_parameter/dissolve_color = Color(1, 1, 1, 1)
+shader_parameter/use_dissolve_mask = false
+shader_parameter/dissolve_mask_uv_scale = Vector2(1, 1)
+shader_parameter/use_distance_fade = false
+shader_parameter/distance_fade_near = 0.0
+shader_parameter/distance_fade_far = 5.0
+shader_parameter/distance_fade_strength = 1.0
+shader_parameter/distance_fade_color = Color(0, 0, 0, 1)
+shader_parameter/distance_fade_mode = 0
+shader_parameter/use_decal = false
+shader_parameter/decal_color = Color(1, 1, 1, 1)
+shader_parameter/decal_uv_scale = Vector2(1, 1)
+shader_parameter/decal_uv_offset = Vector2(0, 0)
+shader_parameter/decal_strength = 1.0
+shader_parameter/decal_blend_mode = 0
+shader_parameter/use_decal_2nd = false
+shader_parameter/decal_2nd_color = Color(1, 1, 1, 1)
+shader_parameter/decal_2nd_uv_scale = Vector2(1, 1)
+shader_parameter/decal_2nd_uv_offset = Vector2(0, 0)
+shader_parameter/decal_2nd_strength = 1.0
+shader_parameter/decal_2nd_blend_mode = 0
+
+[node name="LightmapBakeLab" type="Node3D" unique_id=806296106]
+script = ExtResource("1_op6yp")
+
+[node name="@Camera3D@25798" type="Camera3D" parent="." unique_id=477386169]
+transform = Transform3D(1, 0, 0, 0, 0.9950372, 0.09950371, 0, -0.09950371, 0.9950372, 0, 1.3, 5)
+current = true
+
+[node name="@WorldEnvironment@25799" type="WorldEnvironment" parent="." unique_id=95590317]
+environment = SubResource("Environment_3ncl8")
+
+[node name="StaticLight" type="DirectionalLight3D" parent="." unique_id=363588858]
+transform = Transform3D(0.8660254, 0.21130913, -0.45315388, 0, 0.90630776, 0.42261827, 0.5, -0.36599815, 0.7848855, 0, 0, 0)
+light_energy = 1.6
+light_bake_mode = 1
+
+[node name="QuadA" type="MeshInstance3D" parent="." unique_id=1929186317]
+transform = Transform3D(1.8, 0, 0, 0, 1.8, 0, 0, 0, 1.8, -1, 0.9, 0)
+material_override = SubResource("ShaderMaterial_b40fr")
+mesh = ExtResource("2_op6yp")
+gi_mode = 1
+
+[node name="@Label3D@25800" type="Label3D" parent="." unique_id=1777668166]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 2.15, 0)
+billboard = 1
+no_depth_test = true
+modulate = Color(1, 0.95, 0.8, 1)
+text = "A 光照贴图（烘焙后应亮）"
+font_size = 36
+
+[node name="QuadB" type="MeshInstance3D" parent="." unique_id=976256968]
+transform = Transform3D(1.8, 0, 0, 0, 1.8, 0, 0, 0, 1.8, 1, 0.9, 0)
+material_override = SubResource("ShaderMaterial_b40fr")
+gi_mode = 0
+mesh = ExtResource("2_op6yp")
+
+[node name="@Label3D@25801" type="Label3D" parent="." unique_id=602020027]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 2.15, 0)
+billboard = 1
+no_depth_test = true
+modulate = Color(1, 0.95, 0.8, 1)
+text = "B 对照（应保持黑）"
+font_size = 36
+
+[node name="LightmapGI" type="LightmapGI" parent="." unique_id=1140979489]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+light_data = ExtResource("3_lmbake")

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/liltoon_gd/demo/gem_lab.gd" id="1_gemlab"]
+
+[node name="GemLab" type="Node3D"]
+script = ExtResource("1_gemlab")

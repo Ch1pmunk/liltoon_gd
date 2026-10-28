@@ -1,0 +1,16 @@
+# Godot 生成的导入缓存（机器相关，不入库）
+.godot/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 备份与临时文件
+*.bak
+*.tmp
+*~
