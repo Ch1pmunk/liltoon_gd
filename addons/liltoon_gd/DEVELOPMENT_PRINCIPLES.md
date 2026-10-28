@@ -4,7 +4,7 @@
 
 ## 0. 功能对齐基准（最高优先级）
 
-- 参考版本**固定为 lilToon 2.4.1**，使用本地目录 `C:\Users\Ch1pmunk_Z\Desktop\lilToon-master\Assets\lilToon`（源码）与 `C:\Users\Ch1pmunk_Z\Desktop\lilToon-release`（包结构）。版本以两处 `package.json` 为准；master 根目录 `version.json` 是遗留文件（2.1.1），不可作为版本依据。
+- 参考版本**固定为 lilToon 2.4.1**，源码随仓库分发在 `lilToon-2.4.1/`（`Assets/lilToon/Shader/lts.shader` 等）。版本以 `package.json` 为准；根目录 `version.json` 是上游遗留文件（2.1.1），不可作为版本依据。
 - 不主动从上游拉取新版本，避免作者更新打乱计划；升级参考版本需由用户提供新目录并明确确认。
 - 所有功能以 **liltoon（Unity 原版）** 为对齐基准：参数语义、取值范围、默认值、视觉效果、交互方式都向原版看齐。
 - 引擎差异只允许影响**实现方式**，不允许作为缺功能、改行为或降级效果的理由；必须主动调整 shader/管线实现，尽可能贴近原版表现。

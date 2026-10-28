@@ -251,61 +251,33 @@ A2C 用 `set_alpha_to_mask()` 或面板开关。
 | A2C 边缘没效果 | 视口 MSAA 未开 | 项目设置里 `msaa_3d` 设 2× 或 4× |
 | 后处理描边不出现 | Mobile/Compatibility 无深度纹理 | 用网格描边（`outline_enabled`） |
 | 描边变粉/报错 | 变体组合不存在 | 用材质工厂的 `set_outline_*` API 切换 |
-| 预设切换后某参数没重置 | 预设漏键 | 跑 `tools/audit_consistency.py` 查缺 |
+| 预设切换后某参数没重置 | 预设漏键 | 重新套用一次预设，或检查该参数是否在当前 shader 变体上 |
 | 场景启动黑屏 | 多材质×多光源初始化超 GPU 驱动超时 | 减材质数/光源数，或换更强显卡 |
 | 材质参数改了没反应 | 参数不在当前变体上（如 `use_refraction` 需折射变体） | 看参数描述里的「仅在 X 变体生效」 |
 | Inspector 悬停描述全黑 | `EditorProperty.tooltip_text` 被覆盖 | 不要改写该字段，描述注入到属性行内部控件 |
 
 ---
 
-## 十、开发与验证工具
+## 十、开发与验证
 
-仓库 `tools/` 下有完整的自动化校验链（命令行运行）：
+本仓库只包含插件本体。开发期用的自动化校验链（冒烟测试、shader 编译自检、
+参数对齐矩阵重算、一致性/默认值/发布审计）与项目内部文档**不随仓库分发**，
+它们在开发环境维护，对插件使用者无需求。
 
-```powershell
-# 冒烟测试（必须用这个，含 120 秒硬超时）：参数描述覆盖、预设往返、越界校验、Editor 工具
-powershell -ExecutionPolicy Bypass -File tools\smoke.ps1
-
-# 参数对齐矩阵重算（写回 docs/参数对齐矩阵.md）
-python tools/gen_alignment_matrix.py --write
-
-# 默认值与原版一致性
-python tools/compare_defaults.py
-
-# 矩阵/代码/预设三方交叉校验
-python tools/audit_consistency.py
-
-# 发布前静态审计（资源路径、类名唯一性、文档死链、TODO 残留）
-python tools/audit_release.py
-
-# 矩阵对账（查重复登记）
-python tools/audit_matrix_reconcile.py
-
-# 变体编译自检（逐进程，28 个 shader，注意批间间隔）
-powershell -ExecutionPolicy Bypass -File tools\check_all_shaders.ps1
-
-# 深度/屏幕纹理诊断
-godot --path . -s res://tools/depth_probe.gd -- variant=edge
-```
-
-**不要直接调 `godot --headless -s res://tools/smoke_test.gd`**：脚本编译失败时会卡死不退出，必须用 `smoke.ps1`（超时后会打印尾部错误）。
+需要自检时，最直接的方式是打开 Godot 运行 `addons/liltoon_gd/demo/` 下的演示场景。
 
 ---
 
 ## 十一、文档
 
-仓库内文档：
-
 | 文档 | 内容 |
 |---|---|
-| [`addons/liltoon_gd/DEVELOPMENT_PRINCIPLES.md`](addons/liltoon_gd/DEVELOPMENT_PRINCIPLES.md) | 开发原则 + §9 每条实现的对齐判定与差异 |
+| [`addons/liltoon_gd/DEVELOPMENT_PRINCIPLES.md`](addons/liltoon_gd/DEVELOPMENT_PRINCIPLES.md) | 开发原则 + 每条实现的对齐判定与差异（含与原版的已知差距） |
 | [`addons/liltoon_gd/THIRD_PARTY_NOTICES.md`](addons/liltoon_gd/THIRD_PARTY_NOTICES.md) | lilToon MIT 声明（**分发必须保留**） |
-| [`ROADMAP.md`](ROADMAP.md) | 阶段历史、SCOPE LOG、风险记录 |
-| [`移植说明.md`](移植说明.md) | 迁移包说明 |
 
-**不随本仓库分发**（开发仓库 `docs/` 维护）：功能对照表（lilToon ↔ liltoon_gd 逐项复刻程度）、
-参数对齐矩阵（578 项属性对照）、迁移指南、交接文档、发布检查清单、证据截图。
-需要这些文档请参考 `tools/` 下的生成脚本（可自行重算对齐矩阵）。
+**不随本仓库分发**（开发环境维护）：lilToon ↔ liltoon_gd 全量功能对照表、
+参数对齐矩阵（578 项属性逐项对照）、迁移指南、开发记录、证据截图。
+需要了解差异时，`DEVELOPMENT_PRINCIPLES.md` 里有每条实现的对齐判定与已知差距说明。
 
 ---
 
