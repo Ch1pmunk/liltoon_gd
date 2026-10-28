@@ -331,19 +331,24 @@ func _on_show_settings() -> void:
 
 
 func _first_liltoon_material(inst: GeometryInstance3D) -> ShaderMaterial:
-	var candidates: Array = []
+	var candidates: Array[Material] = []
 	if inst.material_override != null:
 		candidates.append(inst.material_override)
-	for i in inst.get_surface_override_material_count():
-		var m := inst.get_surface_override_material(i)
-		if m != null:
-			candidates.append(m)
-	var mesh := inst.mesh
-	if mesh != null:
-		for i in mesh.get_surface_count():
-			var m := mesh.surface_get_material(i)
-			if m != null:
-				candidates.append(m)
+	var override_count: int = inst.get_surface_override_material_count()
+	for idx in override_count:
+		var override_mat: Material = inst.get_surface_override_material(idx)
+		if override_mat != null:
+			candidates.append(override_mat)
+	# mesh 是 MeshInstance3D 的属性，GeometryInstance3D 上没有，必须先收窄类型
+	var mesh_inst := inst as MeshInstance3D
+	if mesh_inst != null:
+		var mesh: Mesh = mesh_inst.mesh
+		if mesh != null:
+			var surface_count: int = mesh.get_surface_count()
+			for idx in surface_count:
+				var surface_mat: Material = mesh.surface_get_material(idx)
+				if surface_mat != null:
+					candidates.append(surface_mat)
 	for c in candidates:
 		var sm := c as ShaderMaterial
 		if sm != null and sm.shader != null and sm.shader.resource_path.contains("liltoon_gd"):

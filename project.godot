@@ -39,6 +39,10 @@ enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg", "res://addons/lil
 
 language="zh"
 installed_version="1.0.0"
+default_preset="默认"
+quality_tier="high"
+bake_size=512
+startup_check_done=false
 
 [physics]
 
