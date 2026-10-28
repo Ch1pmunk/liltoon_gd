@@ -166,6 +166,7 @@ Godot 的 spatial shader 与 Unity 表面着色器的语义不同，`light()` �
 | 宝石 | 已对齐（近似） | `liltoon_gem.gdshader`（`shaders/extra/`），对齐 `_GemChromaticAberration` / `_GemEnvColor` / `_GemEnvContrast` / `_GemParticleColor`；`_GemParticleLoop` 固定 8（原版需粒子系统联动，不在对齐清单）；反射色散只在背面生效（原版如此），正面靠折射色散体现 |
 | 折射 / 宝石屏幕纹理 | 辅助参数 | `refraction_screen_texture` / `gem_screen_texture`（`hint_screen_texture`，引擎自动填充，不进预设） |
 | 毛发触摸辅助参数 | 辅助参数 | `fur_touch_position`（物体空间触摸点）、`fur_touch_range`（影响半径）；`fur_noise_mask_uv_scale`（噪声遮罩 UV 缩放） |
+| 采样器数量 | 已知代价 | v1.0 后新增 10 个采样器（毛发遮罩 2、反射立方体贴图 1、屏幕纹理 2 等），总数 67→77。`reflection_cubemap` 是 `samplerCube` 且**无条件声明**（无法用 `#ifdef` 收起，否则需要新变体），每个 shader 多占一个纹理单元。Forward+/Vulkan 上限充足无实际影响；但「多材质×多光源初始化开销」这条已知风险会略微加重。属功能代价，非缺陷 |
 | 反射探针 / 环境反射 | 部分 | 环境 IBL 正常（天空反射已验证）；ReflectionProbe 在当前 D3D12 + Intel UHD 617 上不生效（标准材质对照也全黑），Vulkan 启动即退出，待换环境复验 |
 | 距离淡出与描边隐藏 | 已适配 | 主体与描边共用参数，工厂在创建/应用预设时同步；面板提供「同步描边淡出」按钮，改完 Inspector 参数点一次即可。淡出时的边缘光染色 `distance_fade_rim_color` 与菲涅尔幂 `distance_fade_rim_fresnel_power` 已对齐 `_DistanceFadeRimColor` / `_DistanceFadeRimFresnelPower`，默认 Alpha 0 不生效 |
 | 贴花层 | 近似 | 三层贴花 + 每层遮罩（共享 + 专用）+ 每层 UV 滚动/旋转 + 每层 UV/UV2 模式 + 2nd/3rd 序列帧；主贴花没有序列帧 |

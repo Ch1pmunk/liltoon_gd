@@ -6,6 +6,12 @@ varying float lil_fur_t;
 // 世界上方向在视空间的 XY 投影：MatCap 滚转抵消用（辅助函数里取不到 VIEW_MATRIX）。
 varying vec2 lil_matcap_up;
 
+// 安全归一化：长度近零时回退到 fallback，避免 normalize(0) 产生 NaN 顶点（表现为几何炸裂/消失）。
+// 毛发方向由多个可为零的向量合成（毛向量 + 顶点色 + 贴图 + 重力 + 随机 + 触摸），逐层都有归零可能。
+vec3 lil_safe_normalize(vec3 v, vec3 fallback) {
+    return dot(v, v) > 1e-8 ? normalize(v) : fallback;
+}
+
 void vertex() {
     vec3 tangent = MODELVIEW_NORMAL_MATRIX * TANGENT;
     lil_tangent_view = length(tangent) > 0.0001 ? normalize(tangent) : vec3(1.0, 0.0, 0.0);
@@ -44,19 +50,20 @@ void vertex() {
         fur_tex_n.xy *= fur_vector_scale;
         fur_vec = vec3(fur_vec.xy + fur_tex_n.xy, fur_vec.z * fur_tex_n.z);
     }
-    vec3 fur_tangent_dir = normalize(fur_tangent * fur_vec.x + fur_bitangent * fur_vec.y + NORMAL * fur_vec.z);
-    vec3 fur_base_dir = normalize(mix(NORMAL, fur_tangent_dir, fur_direction_strength));
-    vec3 fur_dir = normalize(fur_base_dir + vec3(0.0, -fur_gravity * fur_t, 0.0) * 0.6);
+    // 每一层都可能合成零向量（毛向量被顶点色 z=0 抹掉、与法线反向、重力抵消等），逐层回退。
+    vec3 fur_tangent_dir = lil_safe_normalize(fur_tangent * fur_vec.x + fur_bitangent * fur_vec.y + NORMAL * fur_vec.z, NORMAL);
+    vec3 fur_base_dir = lil_safe_normalize(mix(NORMAL, fur_tangent_dir, fur_direction_strength), NORMAL);
+    vec3 fur_dir = lil_safe_normalize(fur_base_dir + vec3(0.0, -fur_gravity * fur_t, 0.0) * 0.6, fur_base_dir);
     // 毛向量随机化：给方向加确定性随机扰动，对应 _FurRandomize（原版还乘毛长，这里只改方向）。
     if (fur_randomize > 0.001) {
-        vec3 fur_rand = normalize(vec3(fur_hash - 0.5, fract(fur_hash * 7.31) - 0.5, fract(fur_hash * 3.17) - 0.5) + vec3(0.0001));
-        fur_dir = normalize(fur_dir + fur_rand * fur_randomize);
+        vec3 fur_rand = lil_safe_normalize(vec3(fur_hash - 0.5, fract(fur_hash * 7.31) - 0.5, fract(fur_hash * 3.17) - 0.5) + vec3(0.0001), vec3(0.0, 1.0, 0.0));
+        fur_dir = lil_safe_normalize(fur_dir + fur_rand * fur_randomize, fur_dir);
     }
     // 触摸：把毛发从触摸点推开，对应 _FurTouchStrength（原版用 Unity 点光源，这里用物体空间触摸点）。
     if (fur_touch_strength > 0.001) {
         vec3 touch_delta = VERTEX - fur_touch_position;
         float touch_atten = clamp(1.0 - length(touch_delta) / max(fur_touch_range, 0.001), 0.0, 1.0);
-        fur_dir = normalize(fur_dir + normalize(touch_delta + vec3(0.0001)) * touch_atten * fur_touch_strength);
+        fur_dir = lil_safe_normalize(fur_dir + lil_safe_normalize(touch_delta + vec3(0.0001), vec3(0.0, 1.0, 0.0)) * touch_atten * fur_touch_strength, fur_dir);
     }
     VERTEX += fur_dir * fur_length * fur_vector_scale * fur_t * fur_jitter * fur_len_mask;
     float fur_phase = sin(TIME * fur_wind_speed + VERTEX.x * 3.0 + VERTEX.y * 2.5);
