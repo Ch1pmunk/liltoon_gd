@@ -95,7 +95,8 @@ uniform float shade_threshold : hint_range(0.0, 1.0, 0.01) = 0.5;
 ## 7. 描述补齐与校验
 
 - 历史参数若缺少描述，应在下一次修改该 shader 时补齐。
-- 当前覆盖：**17 个主材质变体**（6 个 cutout 含 3 个 Alpha To Coverage、3 个 opaque、4 个 transparent、4 个 fur）各 **465** 个参数，另加 6 个描边变体共用 32 个参数；描述全部注入到属性行的值控件。
+- 当前覆盖：主材质统一由 `uniforms.gdshaderinc` 声明 **623** 个 uniform（含 sampler），描边变体另由 `outline_common.gdshaderinc` 共用 4 个采样器 + 若干标量；`shaders/extra/` 的折射/宝石/假阴影各自声明。全部描述由 `shader_doc_parser.gd` 注入到属性行的值控件。
+- 覆盖率的权威数字以 `python tools/audit_consistency.py` 输出的「代码参数」为准，本文不再写死具体条数，避免反复过期。
 - 校验方式：`tools/smoke_test.gd` 会比对 include 中声明的 uniform 与解析出的描述条目，缺一条即失败；编辑器内可再用 gdmcp 抽查 `EditorProperty.tooltip_text` 必须保持 `property|...` 形式（即未被插件改写），且每个属性行至少有一个子控件带描述。
 - 新增参数后，覆盖率必须保持 100%。
 - 描述注入是**多帧重复执行**的（Inspector 分组与属性行分帧创建），不能在首帧成功后提前返回；重复执行靠控件 meta 保证幂等。
