@@ -363,7 +363,8 @@ float lil_rim_factor(vec3 view_normal, vec3 view_dir) {
     return lil_tooning_scale(lil_rim_fresnel(view_normal, view_dir), rim_border, rim_blur);
 }
 
-vec3 lil_emission(vec2 base_uv, vec2 view_ratio, vec3 albedo) {
+// al_grad：AudioLink 叠加到渐变相位的量（对应 _AudioLink2EmissionGrad），未启用时传 0。
+vec3 lil_emission(vec2 base_uv, vec2 view_ratio, vec3 albedo, float al_grad) {
     if (!use_emission) {
         return vec3(0.0);
     }
@@ -386,7 +387,8 @@ vec3 lil_emission(vec2 base_uv, vec2 view_ratio, vec3 albedo) {
         alpha *= mask.a;
     }
     if (use_emission_grad) {
-        color *= texture(emission_grad_texture, vec2(fract(TIME * emission_grad_speed), 0.5)).rgb;
+        // 渐变相位叠加 AudioLink（原版：_EmissionGradSpeed * TIME + audioLinkValue * _AudioLink2EmissionGrad）
+        color *= texture(emission_grad_texture, vec2(fract(TIME * emission_grad_speed + al_grad), 0.5)).rgb;
     }
     color = mix(color, color * albedo, emission_main_strength);
     if (emission_blend_mode == 1) {
@@ -396,7 +398,8 @@ vec3 lil_emission(vec2 base_uv, vec2 view_ratio, vec3 albedo) {
     return color * emission_blend * alpha;
 }
 // 第二层自发光的最终颜色（遮罩、UV 模式、滚动、视差、渐变全部应用），片元与光照阶段共用。
-vec3 lil_emission_2nd(vec2 uv) {
+// al_grad：同 lil_emission，对应 _AudioLink2Emission2ndGrad。
+vec3 lil_emission_2nd(vec2 uv, float al_grad) {
     vec2 mask_uv = lil_uv_anim(uv, emission_2nd_mask_uv_scroll, emission_2nd_mask_uv_rotate);
     float mask_value = use_emission_2nd_mask ? texture(emission_2nd_mask, mask_uv).r : 1.0;
     vec2 emission_uv = (emission_2nd_uv_mode == 1 ? lil_uv2 : uv) * emission_2nd_uv_scale + TIME * emission_2nd_uv_scroll;
@@ -406,7 +409,7 @@ vec3 lil_emission_2nd(vec2 uv) {
     }
     vec3 color = texture(emission_2nd_texture, emission_uv).rgb * emission_2nd_color.rgb * emission_2nd_intensity * mask_value;
     if (use_emission_2nd_grad) {
-        float grad_t = fract(TIME * emission_2nd_grad_speed);
+        float grad_t = fract(TIME * emission_2nd_grad_speed + al_grad);
         color *= texture(emission_2nd_grad_texture, vec2(grad_t, 0.5)).rgb;
     }
     return color;

@@ -313,13 +313,28 @@ void light() {
     // 写 SPECULAR_LIGHT 可避开引擎对 diffuse 的 ALBEDO 二次染色；多光源时会逐光源累加，
     // 比原版（只取主光）偏亮，已在 §9 记录。
     // 主自发光荧光：与 2nd 同一套近似（写 SPECULAR_LIGHT，多光源逐光源累加）。
+    // AudioLink 渐变相位（_AudioLink2EmissionGrad / _AudioLink2Emission2ndGrad）：
+    // 用显式 if 而不是三元，避免两边都求值带来的无谓采样。
+    float al_grad_main = 0.0;
+    float al_grad_2nd = 0.0;
+    if (use_audiolink && audiolink_2_emission_grad) {
+        al_grad_main = lil_audiolink_value(lil_uv(UV), UV2, UV2, UV2,
+            dot(NORMAL, VIEW), lil_position_os, TIME,
+            audiolink_uv_mode, audiolink_uv_params, audiolink_start);
+    }
+    if (use_audiolink && audiolink_2_emission_2nd_grad) {
+        al_grad_2nd = lil_audiolink_value(lil_uv(UV), UV2, UV2, UV2,
+            dot(NORMAL, VIEW), lil_position_os, TIME,
+            audiolink_uv_mode, audiolink_uv_params, audiolink_start);
+    }
+
     if (use_emission && emission_fluorescence > 0.001 && !use_unlit) {
-        SPECULAR_LIGHT += lil_emission(lil_uv(UV), lil_view.xy / max(abs(lil_view.z), 0.001), ALBEDO)
+        SPECULAR_LIGHT += lil_emission(lil_uv(UV), lil_view.xy / max(abs(lil_view.z), 0.001), ALBEDO, al_grad_main)
             * emission_fluorescence * lil_inv_lighting(light_rgb, shadow);
     }
 
     if (use_emission_2nd && emission_2nd_blend_mode == 0 && !use_unlit && emission_2nd_fluorescence > 0.001) {
-        SPECULAR_LIGHT += lil_emission_2nd(lil_uv(UV)) * emission_2nd_fluorescence * lil_inv_lighting(light_rgb, shadow);
+        SPECULAR_LIGHT += lil_emission_2nd(lil_uv(UV), al_grad_2nd) * emission_2nd_fluorescence * lil_inv_lighting(light_rgb, shadow);
     }
 
     // MatCap 的受光/受阴影：需要逐光源的 light_rgb 与 shadow，只能在光照阶段算。

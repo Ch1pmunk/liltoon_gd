@@ -522,7 +522,8 @@ void fragment() {
     // 近似：原版只作用于阴影区的间接光，这里对整段环境项生效，不区分受光/阴影。
     EMISSION += ambient_color.rgb * ambient_strength * mix(ALBEDO, vec3(1.0), shadow_env_strength);
     // AudioLink 接到主自发光（对应 _AudioLink2Emission / _AudioLink2EmissionGrad）
-    EMISSION += lil_emission(uv, VIEW.xy / max(abs(VIEW.z), 0.001), ALBEDO)
+    EMISSION += lil_emission(uv, VIEW.xy / max(abs(VIEW.z), 0.001), ALBEDO,
+            audiolink_2_emission_grad ? al_value : 0.0)
         * (audiolink_2_emission ? al_value : 1.0) * tri_mask_value.b;
     // 闪点的受光/受阴影同样需要光照信息；unlit 材质没有光照阶段，必须留在片元里。
     bool glitter_in_light = !use_unlit
@@ -563,7 +564,7 @@ void fragment() {
         EMISSION += glitter_tint * glitter_mask * glitter_intensity * glitter_alpha;
     }
     if (use_emission_2nd) {
-        vec3 emission_2nd = lil_emission_2nd(uv);
+        vec3 emission_2nd = lil_emission_2nd(uv, audiolink_2_emission_2nd_grad ? al_value : 0.0);
         if (emission_2nd_blend_mode == 1) {
             ALBEDO *= emission_2nd;
         } else {

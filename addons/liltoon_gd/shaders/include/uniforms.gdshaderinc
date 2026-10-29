@@ -2248,10 +2248,9 @@ group_uniforms AudioLink;
 // 由 LiltoonAudioLink 单例（autoload）每帧写入的全局 uniform。
 // audiolink_texture：128×4，行 = 频段（低→高），列 = 时间（越右越新）。
 global uniform sampler2D audiolink_texture : filter_linear, repeat_enable;
-// 当前 4 个频段的幅值（0..1）。
-global uniform vec4 audiolink_bands;
-// 已写入列数 / 128，用于和 shader 的 TIME 对齐时间轴。
-global uniform float audiolink_time;
+// 备注：audiolink_bands / audiolink_time 由 LiltoonAudioLink 写入、并在 project.godot 的
+// [shader_globals] 注册，但 shader 侧不读取，故不在此声明（避免每个材质白背包袱）。
+// 脚本侧仍可用 get_band() 取值。
 /**
  * 是否启用 AudioLink（让材质跟随音频律动）。
  * 需要场景里挂 LiltoonAudioLink autoload，否则会走合成脉冲回退。
