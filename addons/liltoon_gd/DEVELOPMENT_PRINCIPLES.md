@@ -117,6 +117,7 @@ Godot 的 spatial shader 与 Unity 表面着色器的语义不同，`light()` �
 - **屏幕空间描边**：偏移量在 NDC 中不具像素各向同性，必须按 `PROJECTION_MATRIX` 的 x/y 比例换算，否则非正方形视口下横竖宽度不一致。
 - **环境反射依赖引擎镜面 IBL**：`render_mode specular_disabled` 会同时关闭 ReflectionProbe 与环境反射；主体已移除该声明，默认在片元把 `SPECULAR` 置 0 抑制引擎直射高光，`use_reflection` 打开时才启用 `METALLIC` / `ROUGHNESS` / `SPECULAR`。
 - **背面法线由引擎翻转**：`cull_disabled` / `cull_front` 会让 Godot 定义 `DO_SIDE_CHECK`，并在片元开始时自动对背面执行 `normal_highp = -normal_highp`。shader 里**禁止再翻转 `NORMAL`**，否则两次翻转互相抵消，背面会按正面光照计算（表现为背面发黑、双面材质内外亮度错乱）。
+- **`POSITION` 必须无条件赋值**：Godot 在**编译期**就决定这个 shader 是否使用自定义裁剪空间坐标；一旦检测到对 `POSITION` 的赋值，就认定使用。若赋值写在条件分支里，条件不成立时 `POSITION` 是未定义值 → **整个网格消失**，且编译、冒烟全绿、日志无错（2026-10-29 踩过：UDIM/ID 遮罩的丢弃写进 `if` 内，导致所有主材质不可见）。要按条件丢弃几何，要么无条件赋值（`POSITION = drop ? 裁剪空间外 : 正常投影`），要么改用片元 `discard`。
 - **片元阶段的法线**：`fragment()` 里的 `NORMAL` 是未映射法线，引擎在 fragment 之后才应用 `NORMAL_MAP`。MatCap、Rim 等片元阶段效果若需要映射后法线，必须在片元内用 `normal_ts` 重建（见 `fragment.gdshaderinc` 中 `shaded_normal` 的构建），并对无切线网格回退插值法线避免 NaN。
 
 ## 9. 已知限制与延后项（2026-10-22 验收裁定）
