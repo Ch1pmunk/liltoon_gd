@@ -48,6 +48,14 @@ void fragment() {
         ALBEDO *= mix(vec3(1.0), COLOR.rgb, vertex_color_strength);
     }
 
+    // UDIM 片元模式（_UDIMDiscardMode = 1）：逐像素丢弃。
+    if (use_udim_discard && udim_discard_mode == 1 && lil_udim_discard(UV, UV2, UV2, UV2)) {
+        discard;
+    }
+
+    // 三通道特性遮罩（_TriMask）：R 遮 MatCap、G 遮边缘光、B 遮自发光。
+    vec3 tri_mask_value = use_tri_mask ? texture(tri_mask, uv).rgb : vec3(1.0);
+
     // AudioLink：整帧只算一次，供自发光/贴花各路由复用（原版每处各算一遍，这里合并省采样）。
     float al_value = 1.0;
     if (use_audiolink) {
@@ -332,7 +340,7 @@ void fragment() {
         if (matcap_multiply) {
             ALBEDO *= mix(vec3(1.0), mc, clamp(matcap_weight, 0.0, 1.0));
         } else {
-            EMISSION += mc * matcap_weight;
+            EMISSION += mc * matcap_weight * tri_mask_value.r;
         }
     }
 
@@ -449,7 +457,7 @@ void fragment() {
         }
 
         float rim_alpha = rim_apply_transparency ? clamp(ALPHA, 0.0, 1.0) : 1.0;
-        EMISSION += rim_rgb * rim_factor * rim_color.a * rim_intensity * rim_mask_value * rim_alpha;
+        EMISSION += rim_rgb * rim_factor * rim_color.a * rim_intensity * rim_mask_value * rim_alpha * tri_mask_value.g;
     }
 
     float ao_value = 1.0;
@@ -515,7 +523,7 @@ void fragment() {
     EMISSION += ambient_color.rgb * ambient_strength * mix(ALBEDO, vec3(1.0), shadow_env_strength);
     // AudioLink 接到主自发光（对应 _AudioLink2Emission / _AudioLink2EmissionGrad）
     EMISSION += lil_emission(uv, VIEW.xy / max(abs(VIEW.z), 0.001), ALBEDO)
-        * (audiolink_2_emission ? al_value : 1.0);
+        * (audiolink_2_emission ? al_value : 1.0) * tri_mask_value.b;
     // 闪点的受光/受阴影同样需要光照信息；unlit 材质没有光照阶段，必须留在片元里。
     bool glitter_in_light = !use_unlit
         && (glitter_enable_lighting > 0.001 || glitter_shadow_mask > 0.001);

@@ -2095,6 +2095,119 @@ uniform float refraction_strength : hint_range(-1.0, 1.0, 0.01) = 0.1;
  */
 uniform float refraction_fresnel_power : hint_range(0.01, 10.0, 0.01) = 0.5;
 
+group_uniforms IDMask;
+/** 是否启用 ID 遮罩系统；对应 lilToon `_IDMaskCompile`。 */
+uniform bool use_id_mask = false;
+/**
+ * ID 来源：0=主 UV.x、1=UV1.x、2=UV2.x。
+ * 原版还支持 UV3–UV7 与 VertexID（默认），但 Godot shader 没有顶点 ID、也只有两套 UV，
+ * 故仅保留可实现的三种（详见 §9）。
+ */
+uniform int id_mask_from : hint_enum("主 UV", "UV1", "UV2") = 0;
+/** 索引是否为位掩码（按位判 ID）而非直接相等；对应 lilToon `_IDMaskIsBitmap`。 */
+uniform bool id_mask_is_bitmap = false;
+/** 是否让 ID 遮罩同时驱动溶解（前后状态差即溶解边界）；对应 `_IDMaskControlsDissolve`。 */
+uniform bool id_mask_controls_dissolve = false;
+/** 第 1 个 ID 槽是否启用；对应 lilToon `_IDMask1`。 */
+uniform bool id_mask_1 = false;
+/** 第 2 个 ID 槽是否启用；对应 lilToon `_IDMask2`。 */
+uniform bool id_mask_2 = false;
+/** 第 3 个 ID 槽是否启用；对应 lilToon `_IDMask3`。 */
+uniform bool id_mask_3 = false;
+/** 第 4 个 ID 槽是否启用；对应 lilToon `_IDMask4`。 */
+uniform bool id_mask_4 = false;
+/** 第 5 个 ID 槽是否启用；对应 lilToon `_IDMask5`。 */
+uniform bool id_mask_5 = false;
+/** 第 6 个 ID 槽是否启用；对应 lilToon `_IDMask6`。 */
+uniform bool id_mask_6 = false;
+/** 第 7 个 ID 槽是否启用；对应 lilToon `_IDMask7`。 */
+uniform bool id_mask_7 = false;
+/** 第 8 个 ID 槽是否启用；对应 lilToon `_IDMask8`。 */
+uniform bool id_mask_8 = false;
+/** 第 1 个 ID 槽要比对的编号；对应 lilToon `_IDMaskIndex1`。 */
+uniform int id_mask_index_1 : hint_range(0, 255, 1) = 1;
+/** 第 2 个 ID 槽要比对的编号；对应 lilToon `_IDMaskIndex2`。 */
+uniform int id_mask_index_2 : hint_range(0, 255, 1) = 2;
+/** 第 3 个 ID 槽要比对的编号；对应 lilToon `_IDMaskIndex3`。 */
+uniform int id_mask_index_3 : hint_range(0, 255, 1) = 4;
+/** 第 4 个 ID 槽要比对的编号；对应 lilToon `_IDMaskIndex4`。 */
+uniform int id_mask_index_4 : hint_range(0, 255, 1) = 8;
+/** 第 5 个 ID 槽要比对的编号；对应 lilToon `_IDMaskIndex5`。 */
+uniform int id_mask_index_5 : hint_range(0, 255, 1) = 16;
+/** 第 6 个 ID 槽要比对的编号；对应 lilToon `_IDMaskIndex6`。 */
+uniform int id_mask_index_6 : hint_range(0, 255, 1) = 32;
+/** 第 7 个 ID 槽要比对的编号；对应 lilToon `_IDMaskIndex7`。 */
+uniform int id_mask_index_7 : hint_range(0, 255, 1) = 64;
+/** 第 8 个 ID 槽要比对的编号；对应 lilToon `_IDMaskIndex8`。 */
+uniform int id_mask_index_8 : hint_range(0, 255, 1) = 128;
+/** 第 1 槽的「前态」开关，用于溶解动画的起始状态；对应 `_IDMaskPrior1`。 */
+uniform bool id_mask_prior_1 = false;
+/** 第 2 槽的前态开关；对应 `_IDMaskPrior2`。 */
+uniform bool id_mask_prior_2 = false;
+/** 第 3 槽的前态开关；对应 `_IDMaskPrior3`。 */
+uniform bool id_mask_prior_3 = false;
+/** 第 4 槽的前态开关；对应 `_IDMaskPrior4`。 */
+uniform bool id_mask_prior_4 = false;
+/** 第 5 槽的前态开关；对应 `_IDMaskPrior5`。 */
+uniform bool id_mask_prior_5 = false;
+/** 第 6 槽的前态开关；对应 `_IDMaskPrior6`。 */
+uniform bool id_mask_prior_6 = false;
+/** 第 7 槽的前态开关；对应 `_IDMaskPrior7`。 */
+uniform bool id_mask_prior_7 = false;
+/** 第 8 槽的前态开关；对应 `_IDMaskPrior8`。 */
+uniform bool id_mask_prior_8 = false;
+
+group_uniforms Mask;
+/** 是否启用三通道特性遮罩；对应 lilToon `_TriMask`（原版仅 lite pass 采样，主通道恒为 1）。 */
+uniform bool use_tri_mask = false;
+/**
+ * 三通道特性遮罩：R 遮 MatCap、G 遮边缘光、B 遮自发光；对应 lilToon `_TriMask`。
+ */
+uniform sampler2D tri_mask : hint_default_white, filter_linear_mipmap, repeat_enable;
+
+group_uniforms UDIM;
+/**
+ * 是否启用 UDIM 平铺丢弃（对应 lilToon `_UDIMDiscardCompile`）。
+ * 按 UV 落在 4×4 网格的哪一格决定是否丢弃该像素，用于 UV 平铺工作流。
+ */
+uniform bool use_udim_discard = false;
+/** 丢弃执行位置：0 顶点（快，整块丢弃）、1 片元（慢，逐像素）；对应 `_UDIMDiscardMode`。 */
+uniform int udim_discard_mode : hint_enum("顶点", "片元") = 0;
+/** 用哪套 UV 判定：0=主 UV、1=UV1、2=UV2、3=UV3（Godot 只有 UV/UV2，2 与 3 都取 UV2）；对应 `_UDIMDiscardUV`。 */
+uniform int udim_discard_uv : hint_enum("主 UV", "UV1", "UV2", "UV3") = 0;
+/** UV 格 (0,0)（x∈[0,1), y∈[0,1)）是否丢弃；对应 lilToon `_UDIMDiscardRow0_0`。 */
+uniform bool udim_discard_row0_0 = false;
+/** UV 格 (0,1)（x∈[1,2), y∈[0,1)）是否丢弃；对应 lilToon `_UDIMDiscardRow0_1`。 */
+uniform bool udim_discard_row0_1 = false;
+/** UV 格 (0,2)（x∈[2,3), y∈[0,1)）是否丢弃；对应 lilToon `_UDIMDiscardRow0_2`。 */
+uniform bool udim_discard_row0_2 = false;
+/** UV 格 (0,3)（x∈[3,4), y∈[0,1)）是否丢弃；对应 lilToon `_UDIMDiscardRow0_3`。 */
+uniform bool udim_discard_row0_3 = false;
+/** UV 格 (1,0)（x∈[0,1), y∈[1,2)）是否丢弃；对应 lilToon `_UDIMDiscardRow1_0`。 */
+uniform bool udim_discard_row1_0 = false;
+/** UV 格 (1,1)（x∈[1,2), y∈[1,2)）是否丢弃；对应 lilToon `_UDIMDiscardRow1_1`。 */
+uniform bool udim_discard_row1_1 = false;
+/** UV 格 (1,2)（x∈[2,3), y∈[1,2)）是否丢弃；对应 lilToon `_UDIMDiscardRow1_2`。 */
+uniform bool udim_discard_row1_2 = false;
+/** UV 格 (1,3)（x∈[3,4), y∈[1,2)）是否丢弃；对应 lilToon `_UDIMDiscardRow1_3`。 */
+uniform bool udim_discard_row1_3 = false;
+/** UV 格 (2,0)（x∈[0,1), y∈[2,3)）是否丢弃；对应 lilToon `_UDIMDiscardRow2_0`。 */
+uniform bool udim_discard_row2_0 = false;
+/** UV 格 (2,1)（x∈[1,2), y∈[2,3)）是否丢弃；对应 lilToon `_UDIMDiscardRow2_1`。 */
+uniform bool udim_discard_row2_1 = false;
+/** UV 格 (2,2)（x∈[2,3), y∈[2,3)）是否丢弃；对应 lilToon `_UDIMDiscardRow2_2`。 */
+uniform bool udim_discard_row2_2 = false;
+/** UV 格 (2,3)（x∈[3,4), y∈[2,3)）是否丢弃；对应 lilToon `_UDIMDiscardRow2_3`。 */
+uniform bool udim_discard_row2_3 = false;
+/** UV 格 (3,0)（x∈[0,1), y∈[3,4)）是否丢弃；对应 lilToon `_UDIMDiscardRow3_0`。 */
+uniform bool udim_discard_row3_0 = false;
+/** UV 格 (3,1)（x∈[1,2), y∈[3,4)）是否丢弃；对应 lilToon `_UDIMDiscardRow3_1`。 */
+uniform bool udim_discard_row3_1 = false;
+/** UV 格 (3,2)（x∈[2,3), y∈[3,4)）是否丢弃；对应 lilToon `_UDIMDiscardRow3_2`。 */
+uniform bool udim_discard_row3_2 = false;
+/** UV 格 (3,3)（x∈[3,4), y∈[3,4)）是否丢弃；对应 lilToon `_UDIMDiscardRow3_3`。 */
+uniform bool udim_discard_row3_3 = false;
+
 group_uniforms AudioLink;
 // 由 LiltoonAudioLink 单例（autoload）每帧写入的全局 uniform。
 // audiolink_texture：128×4，行 = 频段（低→高），列 = 时间（越右越新）。

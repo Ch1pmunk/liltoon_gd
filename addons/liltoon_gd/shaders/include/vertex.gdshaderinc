@@ -13,6 +13,82 @@ vec3 lil_safe_normalize(vec3 v, vec3 fallback) {
 }
 
 // ============================================================================
+// ID 遮罩（对应 lilToon 的 IDMask / _IDMask*）
+// 按 UV.x 取出 ID，与 8 个索引槽比对，命中则丢弃该顶点。
+// 原版默认用 SV_VertexID，Godot shader 没有顶点 ID，故只能走 UV 源（见 §9）。
+// ============================================================================
+
+bool lil_id_mask_slot(int idv, bool is_bitmap, float flag, int index) {
+    if (flag < 0.5) {
+        return false;
+    }
+    // 位掩码模式：index 直接是位值；否则要求完全相等
+    return is_bitmap ? ((idv & index) != 0) : (idv == index);
+}
+
+bool lil_id_mask_hit(int idv, bool is_bitmap, bool prior) {
+    if (!prior) {
+        return lil_id_mask_slot(idv, is_bitmap, float(id_mask_1), id_mask_index_1)
+            || lil_id_mask_slot(idv, is_bitmap, float(id_mask_2), id_mask_index_2)
+            || lil_id_mask_slot(idv, is_bitmap, float(id_mask_3), id_mask_index_3)
+            || lil_id_mask_slot(idv, is_bitmap, float(id_mask_4), id_mask_index_4)
+            || lil_id_mask_slot(idv, is_bitmap, float(id_mask_5), id_mask_index_5)
+            || lil_id_mask_slot(idv, is_bitmap, float(id_mask_6), id_mask_index_6)
+            || lil_id_mask_slot(idv, is_bitmap, float(id_mask_7), id_mask_index_7)
+            || lil_id_mask_slot(idv, is_bitmap, float(id_mask_8), id_mask_index_8);
+    }
+    return lil_id_mask_slot(idv, is_bitmap, float(id_mask_prior_1), id_mask_index_1)
+        || lil_id_mask_slot(idv, is_bitmap, float(id_mask_prior_2), id_mask_index_2)
+        || lil_id_mask_slot(idv, is_bitmap, float(id_mask_prior_3), id_mask_index_3)
+        || lil_id_mask_slot(idv, is_bitmap, float(id_mask_prior_4), id_mask_index_4)
+        || lil_id_mask_slot(idv, is_bitmap, float(id_mask_prior_5), id_mask_index_5)
+        || lil_id_mask_slot(idv, is_bitmap, float(id_mask_prior_6), id_mask_index_6)
+        || lil_id_mask_slot(idv, is_bitmap, float(id_mask_prior_7), id_mask_index_7)
+        || lil_id_mask_slot(idv, is_bitmap, float(id_mask_prior_8), id_mask_index_8);
+}
+
+// ============================================================================
+// UDIM 平铺丢弃（对应 lilToon 的 lilUDIMDiscard，算法源自 Poiyomi）
+// 按选中 UV 落在 4×4 网格的哪一格决定是否丢弃，用于 UV 平铺工作流。
+// Godot 只有 UV / UV2，故 uv_mode 2 与 3 都取 UV2。
+// ============================================================================
+
+bool lil_udim_discard(vec2 uv0, vec2 uv1, vec2 uv2, vec2 uv3) {
+    vec2 udim = vec2(0.0);
+    udim += uv0 * float(udim_discard_uv == 0);
+    udim += uv1 * float(udim_discard_uv == 1);
+    udim += uv2 * float(udim_discard_uv == 2);
+    udim += uv3 * float(udim_discard_uv == 3);
+
+    vec4 xmask = vec4(
+        float(udim.x >= 0.0 && udim.x < 1.0),
+        float(udim.x >= 1.0 && udim.x < 2.0),
+        float(udim.x >= 2.0 && udim.x < 3.0),
+        float(udim.x >= 3.0 && udim.x < 4.0));
+
+    float discarded = 0.0;
+    discarded += float(udim.y >= 0.0 && udim.y < 1.0)
+        * dot(vec4(float(udim_discard_row0_0), float(udim_discard_row0_1),
+                   float(udim_discard_row0_2), float(udim_discard_row0_3)), xmask);
+    discarded += float(udim.y >= 1.0 && udim.y < 2.0)
+        * dot(vec4(float(udim_discard_row1_0), float(udim_discard_row1_1),
+                   float(udim_discard_row1_2), float(udim_discard_row1_3)), xmask);
+    discarded += float(udim.y >= 2.0 && udim.y < 3.0)
+        * dot(vec4(float(udim_discard_row2_0), float(udim_discard_row2_1),
+                   float(udim_discard_row2_2), float(udim_discard_row2_3)), xmask);
+    discarded += float(udim.y >= 3.0 && udim.y < 4.0)
+        * dot(vec4(float(udim_discard_row3_0), float(udim_discard_row3_1),
+                   float(udim_discard_row3_2), float(udim_discard_row3_3)), xmask);
+
+    // 4×4 网格之外永不丢弃
+    bvec4 in_range = bvec4(udim.y >= 0.0, udim.y < 4.0, udim.x >= 0.0, udim.x < 4.0);
+    discarded *= float(all(in_range));
+
+    // 阈值留一点余量，方便动画贴近 0 时不误判
+    return discarded > 0.001;
+}
+
+// ============================================================================
 // AudioLink（对应 lilToon 的 lilAudioLinkFrag / lil_vert_audiolink）
 // 频谱数据由 LiltoonAudioLink 单例每帧写入全局 uniform；未启用时返回 1.0（不影响任何项）。
 // ============================================================================
@@ -173,5 +249,25 @@ void vertex() {
         float al_vertex = lil_audiolink_value(UV, UV2, UV2, UV2, al_vertex_nv, VERTEX, TIME,
             audiolink_vertex_uv_mode, audiolink_vertex_uv_params, audiolink_vertex_start);
         VERTEX += (audiolink_vertex_strength.xyz + NORMAL * audiolink_vertex_strength.w) * al_vertex;
+    }
+
+    // 顶点级丢弃：UDIM 顶点模式 + ID 遮罩，合并成一次 POSITION 写入。
+    // 两种功能都关闭时完全不写 POSITION，保留引擎默认路径。
+    bool udim_active = use_udim_discard && udim_discard_mode == 0;
+    if (udim_active || use_id_mask) {
+        bool drop = udim_active && lil_udim_discard(UV, UV2, UV2, UV2);
+        if (use_id_mask) {
+            // 原版来源含 UV3–UV7 与 VertexID；Godot 只有 UV/UV2，故 0=主 UV、1/2=UV2
+            int idv = int(id_mask_from == 0 ? UV.x : UV2.x);
+            bool cur_hit = lil_id_mask_hit(idv, id_mask_is_bitmap, false);
+            if (id_mask_controls_dissolve) {
+                // 前后态都为真才算命中（对应原版 idMasked && priorIdMasked）
+                cur_hit = cur_hit && lil_id_mask_hit(idv, id_mask_is_bitmap, true);
+            }
+            drop = drop || cur_hit;
+        }
+        POSITION = drop
+            ? vec4(2.0, 2.0, 2.0, 1.0)
+            : PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
     }
 }

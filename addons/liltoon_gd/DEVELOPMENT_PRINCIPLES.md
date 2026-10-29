@@ -151,10 +151,13 @@ Godot 的 spatial shader 与 Unity 表面着色器的语义不同，`light()` �
 | MatCap 滚转抵消 | 已对齐 | `matcap_zrot_cancel`（对应 `_MatCapZRotCancel`）：用世界上方向在视空间的投影建立"无滚转"基（经 varying 传递，辅助函数取不到 VIEW_MATRIX） |
 | 闪点形状图集 | 已对齐（近似） | `glitter_shape_atlas`（对应 `_GlitterAtras`）：XY 为图集行列、ZW 为偏移，每个闪点随机取一格；原版用 `near.xy` 噪声选格，这里用闪点 hash |
 | 自定义反射立方体贴图 | 已对齐（近似） | `use_reflection_cubemap` / `reflection_cubemap` / `reflection_cubemap_color` / `reflection_cubemap_lighting`（对应 `_ReflectionCube*`）：覆盖环境 IBL；受光程度按"乘 ALBEDO"近似（原版逐光源调制，Godot 片元阶段取不到光色） |
+| ID 遮罩 | 部分对齐 | `use_id_mask` + 8 组 flags/index/prior + `id_mask_is_bitmap` + `id_mask_controls_dissolve`（对应 `_IDMask*` 28 项）；UV.x 取 ID，位掩码模式用位运算判定，命中则写裁剪空间外坐标丢弃。**限制**：原版 `_IDMaskFrom` 支持 UV0–UV7 与 **SV_VertexID**（且默认就是 VertexID），Godot shader 无顶点 ID、只有 UV/UV2，故仅实现 0=主 UV、1/2=UV2 三种来源；`_IDMaskControlsDissolve` 只做到"前后态都为真才保留"，未接溶解边界翻转 |
+| UDIM 平铺丢弃 | 已对齐 | `use_udim_discard` / `udim_discard_mode` / `udim_discard_uv` + 16 个 `udim_discard_row*`（对应 `_UDIMDiscard*`）；分支式 4×4 网格判定，逐行照搬 Poiyomi 算法（lilToon 亦如此署名）。顶点模式写 `POSITION` 移到裁剪空间外，片元模式 `discard`。差异：Godot 只有 UV/UV2，`_UDIMDiscardUV` 的 2/3 都取 UV2 |
+| 三通道特性遮罩 | 已对齐（行为扩展） | `tri_mask` + `use_tri_mask`（对应 `_TriMask`）：R 遮 MatCap、G 遮边缘光、B 遮自发光。**注意差异**：原版主通道 `fd.triMask` 恒为 1，只在 lite / meta pass 采样，因此原版主材质勾了也不会变；本项目没有 lite pass，把它接到主通道并加了 `use_tri_mask` 开关（默认关）。属"更可用"的偏离，如需严格还原可改为默认不接线 |
 | POM 视差遮蔽 | 近似 | `_UsePOM`：本项目视差是偏移映射（单次采样），原版 POM 是射线步进；Godot 可实现但采样开销大，暂按近似放行 |
 | 顶点光强度 | 不做 | `_VertexLightStrength`：Godot 4 Forward+ 的 shader 语言不提供顶点光输入，无对应机制 |
 | 阴影色 LUT 精度 | 近似 | `_ShadowColorType=1` 的 LUT 用连续横带近似原版 16 格 LUT + 插值 |
-| 3D 贴图 / 三平面遮罩 | 不做 | `_MainTex3D`（Godot 无 3D 贴图采样器约定）、`_TriMask`（原版三平面遮罩，本项目三平面无遮罩参数） |
+| 3D 贴图 | 不做 | `_MainTex3D`：原版按 3D 贴图采样，Godot 主贴图采样路径是 2D，无对应约定 |
 | 透明模式选择器 / 子通道裁切 / 叠加渲染 | 不做 | `_TransparentMode`（我们用 shader 变体表达）、`_SubpassCutoff`（Unity 深度子通道专属）、`_AsOverlay`（Unity 叠加渲染专属） |
 | 多光源高光开关 | 不做 | `_ApplySpecularFA`（ForwardAdd 通道专属；Godot 单 pass 多光源，无对应通道） |
 | 折射 | 已对齐 | `liltoon_refraction.gdshader`（`shaders/extra/`），对齐 `_RefractionColor` / `_RefractionColorFromMain` / `_RefractionStrength` / `_RefractionFresnelPower`；单独变体避免所有材质每帧屏幕拷贝 |
