@@ -10,7 +10,7 @@
 >
 > **本项目是非官方移植**，与 lilToon 作者无隶属关系。名称中的 `_gd` 用于区分平台。
 >
-> **功能覆盖情况**：lilToon 的 578 项材质属性中已对齐 336 项，剩余为 Unity 渲染状态 / VR / 引擎机制限制。
+> **功能覆盖情况**：lilToon 的 578 项材质属性中已对齐 358 项，剩余为 Unity 渲染状态 / VR / 引擎机制限制。
 > 逐项标注「完美复刻 / 稍有妥协 / 阉割严重 / 根本没做」的功能对照表与参数矩阵在开发仓库的 `docs/` 中维护，不随本仓库分发。
 
 ---
@@ -195,6 +195,16 @@ A2C 用 `set_alpha_to_mask()` 或面板开关。
 - `fake_shadow_vector` .xyz 附加方向、.w 偏移距离
 - **注意**：Godot 顶点阶段取不到光照方向，需要脚本每帧同步 `light_direction`（演示脚本见 `demo/fakeshadow_lab.gd`）
 
+### AudioLink（音频律动）
+- 先做一次性配置：工具菜单 **liltoon_gd → 启用 AudioLink 全局参数**，然后在
+  `项目设置 → 自动加载` 里加上 `res://addons/liltoon_gd/audio/liltoon_audio_link.gd`
+- 材质里勾 `use_audiolink`，再按需打开路由：
+  `audiolink_2_emission` / `audiolink_2_emission_2nd` / `audiolink_2_emission_grad` /
+  `audiolink_2_emission_2nd_grad` / `audiolink_2_main_2nd` / `audiolink_2_main_3rd` / `audiolink_2_vertex`
+- `audiolink_uv_mode` 决定音频值的取法（固定偏移 / 按视角 / UV 旋转 / 遮罩 RG / 遮罩阈值 / 按距离）
+- 没有音频在播时，shader 会走合成脉冲（由 `audiolink_default_value` 控制频率与亮度），不会静默失效
+- 演示：`demo/audiolink_lab.tscn`
+
 ---
 
 ## 六、Editor 工具（工具菜单 → liltoon_gd）
@@ -283,7 +293,7 @@ A2C 用 `set_alpha_to_mask()` 或面板开关。
 
 ## 十二、演示场景
 
-`addons/liltoon_gd/demo/` 下有 24 个演示/验证场景，每个功能一个 lab：
+`addons/liltoon_gd/demo/` 下有 36 个演示/验证场景，每个功能一个 lab：
 
 | 场景 | 演示 |
 |---|---|
@@ -300,6 +310,7 @@ A2C 用 `set_alpha_to_mask()` 或面板开关。
 | `outline_lab` / `outline_blend_lab` / `outline_light_lab` | 描边（后处理/混合/受光） |
 | `fur_multi_lab` / `fur_features_lab` / `fur_perf_lab` | 毛发（壳层/6 项/性能） |
 | `refraction_lab` / `gem_lab` / `fakeshadow_lab` | 折射 / 宝石 / 假阴影 |
+| `audiolink_lab` | 音频律动（自发光 / 顶点） |
 | `a2c_lab` / `variant_lab` / `quality_lab` | A2C / 变体 / 画质档位 |
 
 直接运行时加 `-- shot` 可截图到 `user://<场景名>.png`（部分场景支持 `-- bench`）。

@@ -12,6 +12,101 @@ vec3 lil_safe_normalize(vec3 v, vec3 fallback) {
     return dot(v, v) > 1e-8 ? normalize(v) : fallback;
 }
 
+// ============================================================================
+// AudioLink（对应 lilToon 的 lilAudioLinkFrag / lil_vert_audiolink）
+// 频谱数据由 LiltoonAudioLink 单例每帧写入全局 uniform；未启用时返回 1.0（不影响任何项）。
+// ============================================================================
+
+vec2 lil_al_rotate_uv(vec2 uv_in, float rad) {
+    float c = cos(rad);
+    float s = sin(rad);
+    return mat2(vec2(c, -s), vec2(s, c)) * uv_in;
+}
+
+// uv_main/uv1..3 供遮罩取用；nv = N·V；position_os 用于距离模式。
+float lil_audiolink_value(vec2 uv_main, vec2 uv1, vec2 uv2, vec2 uv3,
+                          float nv, vec3 position_os, float time,
+                          int uv_mode, vec4 uv_params, vec3 start_pos) {
+    if (!use_audiolink) {
+        return 1.0;
+    }
+
+    // UV.x = 时间轴位置，UV.y = 频段
+    float x = 0.0;
+    if (uv_mode == 0) {
+        x = uv_params.y;
+    } else if (uv_mode == 1) {
+        x = uv_params.x - nv * uv_params.x + uv_params.y;
+    } else if (uv_mode == 2) {
+        x = lil_al_rotate_uv(uv_main, uv_params.z).x * uv_params.x + uv_params.y;
+    } else if (uv_mode == 5) {
+        x = distance(position_os, start_pos) * uv_params.x + uv_params.y;
+    }
+
+    // 遮罩：R=延迟 G=频段 B=强度
+    vec4 mask = vec4(1.0);
+    vec2 auv;
+    if (uv_mode == 3 || uv_mode == 4) {
+        vec2 uvm = uv_main;
+        if (audiolink_mask_uv_mode == 1) {
+            uvm = uv1;
+        } else if (audiolink_mask_uv_mode == 2) {
+            uvm = uv2;
+        } else if (audiolink_mask_uv_mode == 3) {
+            uvm = uv3;
+        }
+        if (use_audiolink_mask) {
+            uvm = lil_al_rotate_uv(uvm * audiolink_mask_uv_scale + time * audiolink_mask_uv_scroll,
+                                   audiolink_mask_uv_rotate);
+            mask = texture(audiolink_mask, uvm);
+        }
+        auv = uv_mode == 3
+            ? mask.rg
+            : vec2(fract(mask.g * 2.0), (4.5 + floor(mask.g * 2.0)) / 4.0);
+    } else {
+        auv = vec2(x, uv_params.w);
+    }
+
+    // 合成脉冲回退：没有频谱数据时也能看到"跑的条纹"，对应 _AudioLinkDefaultValue
+    float val;
+    if (uv_mode == 4) {
+        float default_y = mask.r * 4.0 + audiolink_default_value.w;
+        float default_v = sin(time * audiolink_default_value.z - mask.g * audiolink_default_value.y)
+            * audiolink_default_value.x * uv_params.x
+            + audiolink_default_value.x * uv_params.x;
+        val = uv_params.w < 1.0
+            ? (abs(default_v - default_y) < uv_params.w ? 1.0 : 0.0)
+            : (default_v > default_y ? 1.0 : 0.0);
+    } else {
+        float travel = clamp(fract(time * audiolink_default_value.z - auv.x) + audiolink_default_value.w, 0.0, 1.0);
+        val = clamp(audiolink_default_value.x - travel * audiolink_default_value.y * audiolink_default_value.x, 0.0, 1.0);
+    }
+
+    if (audiolink_as_local) {
+        // 本地贴图模式：按时间横向滚动采样
+        vec2 luv = auv;
+        luv.x += fract(-time * audiolink_local_map_params.x / 60.0 * audiolink_local_map_params.y)
+            + audiolink_local_map_params.z;
+        val = texture(audiolink_local_map, luv).r;
+        return val * mask.b;
+    }
+
+    // 全局频谱纹理：行 = 频段（0..3），列 = 时间
+    float col = clamp(auv.x, 0.0, 1.0);
+    float rowf = clamp(auv.y, 0.0, 0.999) * 4.0;
+    float rowy = (floor(rowf) + 0.5) / 4.0;
+    float tex_val = texture(audiolink_texture, vec2(col, rowy)).r;
+    if (uv_mode == 4) {
+        float audio_val = tex_val * uv_params.x * mix(uv_params.y, uv_params.z, mask.g);
+        val = uv_params.w < 1.0
+            ? (abs(audio_val - mask.r) < uv_params.w ? 1.0 : 0.0)
+            : (audio_val > mask.r ? 1.0 : 0.0);
+    } else {
+        val = tex_val;
+    }
+    return clamp(val, 0.0, 1.0) * mask.b;
+}
+
 void vertex() {
     vec3 tangent = MODELVIEW_NORMAL_MATRIX * TANGENT;
     lil_tangent_view = length(tangent) > 0.0001 ? normalize(tangent) : vec3(1.0, 0.0, 0.0);
@@ -70,4 +165,13 @@ void vertex() {
     vec3 fur_wind = normalize(fur_wind_direction + vec3(0.0001)) * fur_phase * fur_wind_strength * fur_length * fur_t;
     VERTEX += fur_wind;
 #endif
+
+    // AudioLink 顶点位移（对应 _AudioLink2Vertex）：
+    // 方向 = 顶点色/固定方向(audiolink_vertex_strength.xyz) + 法线方向(.w)，幅度 = 音频值。
+    if (use_audiolink && audiolink_2_vertex) {
+        float al_vertex_nv = dot(normalize(MODELVIEW_NORMAL_MATRIX * NORMAL), normalize(-(MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).xyz));
+        float al_vertex = lil_audiolink_value(UV, UV2, UV2, UV2, al_vertex_nv, VERTEX, TIME,
+            audiolink_vertex_uv_mode, audiolink_vertex_uv_params, audiolink_vertex_start);
+        VERTEX += (audiolink_vertex_strength.xyz + NORMAL * audiolink_vertex_strength.w) * al_vertex;
+    }
 }

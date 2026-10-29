@@ -48,6 +48,14 @@ void fragment() {
         ALBEDO *= mix(vec3(1.0), COLOR.rgb, vertex_color_strength);
     }
 
+    // AudioLink：整帧只算一次，供自发光/贴花各路由复用（原版每处各算一遍，这里合并省采样）。
+    float al_value = 1.0;
+    if (use_audiolink) {
+        al_value = lil_audiolink_value(uv, UV2, UV2, UV2,
+            dot(normalize(NORMAL), normalize(VIEW)), lil_position_os, TIME,
+            audiolink_uv_mode, audiolink_uv_params, audiolink_start);
+    }
+
     if (use_decal) {
         vec2 decal_base_uv = (decal_uv_mode == 1 ? UV2 : uv);
     if (use_parallax) {
@@ -113,7 +121,11 @@ void fragment() {
             decal3_mask = 0.0;
         }
         if (!decal_3rd_enable_lighting) {
-            EMISSION += decal3.rgb * decal3_mask;
+            // AudioLink 接到第三贴层的 Alpha（对应 _AudioLink2Main3rd）
+    if (audiolink_2_main_3rd) {
+        decal3_mask *= al_value;
+    }
+    EMISSION += decal3.rgb * decal3_mask;
         } else if (decal_3rd_blend_mode == 1) {
             ALBEDO *= mix(vec3(1.0), decal3.rgb, decal3_mask);
         } else if (decal_3rd_blend_mode == 2) {
@@ -169,7 +181,11 @@ void fragment() {
             decal2_mask = 0.0;
         }
         if (!decal_2nd_enable_lighting) {
-            EMISSION += decal2.rgb * decal2_mask;
+            // AudioLink 接到第二贴层的 Alpha（对应 _AudioLink2Main2nd）
+    if (audiolink_2_main_2nd) {
+        decal2_mask *= al_value;
+    }
+    EMISSION += decal2.rgb * decal2_mask;
         } else if (decal_2nd_blend_mode == 1) {
             ALBEDO *= mix(vec3(1.0), decal2.rgb, decal2_mask);
         } else if (decal_2nd_blend_mode == 2) {
@@ -497,7 +513,9 @@ void fragment() {
     // 阴影环境光强度：把环境项的底色从反照率拉向白色，对应 _ShadowEnvStrength；默认 0 行为不变。
     // 近似：原版只作用于阴影区的间接光，这里对整段环境项生效，不区分受光/阴影。
     EMISSION += ambient_color.rgb * ambient_strength * mix(ALBEDO, vec3(1.0), shadow_env_strength);
-    EMISSION += lil_emission(uv, VIEW.xy / max(abs(VIEW.z), 0.001), ALBEDO);
+    // AudioLink 接到主自发光（对应 _AudioLink2Emission / _AudioLink2EmissionGrad）
+    EMISSION += lil_emission(uv, VIEW.xy / max(abs(VIEW.z), 0.001), ALBEDO)
+        * (audiolink_2_emission ? al_value : 1.0);
     // 闪点的受光/受阴影同样需要光照信息；unlit 材质没有光照阶段，必须留在片元里。
     bool glitter_in_light = !use_unlit
         && (glitter_enable_lighting > 0.001 || glitter_shadow_mask > 0.001);
@@ -543,7 +561,8 @@ void fragment() {
         } else {
             // 荧光部分改在 light() 里按光源强度叠加，这里先扣掉，避免重复叠加。
             float fluorescence = use_unlit ? 0.0 : emission_2nd_fluorescence;
-            EMISSION += emission_2nd * (1.0 - fluorescence);
+            // AudioLink 接到第二层自发光（对应 _AudioLink2Emission2nd / _AudioLink2Emission2ndGrad）
+    EMISSION += emission_2nd * (1.0 - fluorescence) * (audiolink_2_emission_2nd ? al_value : 1.0);
         }
     }
     if (emission_blink_speed > 0.001 && emission_blink_strength > 0.001) {

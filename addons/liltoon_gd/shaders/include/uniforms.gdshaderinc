@@ -2087,6 +2087,81 @@ uniform float refraction_strength : hint_range(-1.0, 1.0, 0.01) = 0.1;
  */
 uniform float refraction_fresnel_power : hint_range(0.01, 10.0, 0.01) = 0.5;
 
+group_uniforms AudioLink;
+// 由 LiltoonAudioLink 单例（autoload）每帧写入的全局 uniform。
+// audiolink_texture：128×4，行 = 频段（低→高），列 = 时间（越右越新）。
+global uniform sampler2D audiolink_texture : filter_linear, repeat_enable;
+// 当前 4 个频段的幅值（0..1）。
+global uniform vec4 audiolink_bands;
+// 已写入列数 / 128，用于和 shader 的 TIME 对齐时间轴。
+global uniform float audiolink_time;
+/**
+ * 是否启用 AudioLink（让材质跟随音频律动）。
+ * 需要场景里挂 LiltoonAudioLink autoload，否则会走合成脉冲回退。
+ */
+uniform bool use_audiolink = false;
+/**
+ * 默认值：X=强度、Y=闪烁强度、Z=闪烁速度、W=闪烁阈值；
+ * 对应 lilToon `_AudioLinkDefaultValue`。
+ */
+uniform vec4 audiolink_default_value = vec4(0.0, 0.0, 2.0, 0.75);
+/**
+ * UV 模式：0 固定偏移、1 按视角、2 按 UV 旋转、3 遮罩 RG、4 遮罩阈值、5 按到起点距离；
+ * 对应 lilToon `_AudioLinkUVMode`。
+ */
+uniform int audiolink_uv_mode : hint_enum("固定偏移", "按视角", "UV 旋转", "遮罩 RG", "遮罩阈值", "按距离") = 1;
+/**
+ * UV 参数：X=缩放、Y=偏移、Z=旋转角度、W=频段（0=低音…1=高音）；
+ * 对应 lilToon `_AudioLinkUVParams`。
+ */
+uniform vec4 audiolink_uv_params = vec4(0.25, 0.0, 0.0, 0.125);
+/**
+ * 距离模式的起点（物体空间）；对应 lilToon `_AudioLinkStart`。
+ */
+uniform vec3 audiolink_start = vec3(0.0);
+/** 是否使用 AudioLink 遮罩贴图；对应 lilToon 的 `_AudioLinkMask` 特性。 */
+uniform bool use_audiolink_mask = false;
+/**
+ * AudioLink 遮罩：R=延迟 G=频段 B=强度；对应 lilToon `_AudioLinkMask`。
+ */
+uniform sampler2D audiolink_mask : hint_default_white, filter_linear_mipmap, repeat_enable;
+/** 遮罩 UV 缩放；对应 `_AudioLinkMask_ST`。 */
+uniform vec2 audiolink_mask_uv_scale = vec2(1.0, 1.0);
+/** 遮罩 UV 滚动速度；对应 `_AudioLinkMask_ScrollRotate.xy`。 */
+uniform vec2 audiolink_mask_uv_scroll = vec2(0.0, 0.0);
+/** 遮罩 UV 旋转角度（弧度）；对应 `_AudioLinkMask_ScrollRotate.z`。 */
+uniform float audiolink_mask_uv_rotate = 0.0;
+/** 遮罩 UV 来源：主 UV / UV1 / UV2 / UV3；对应 `_AudioLinkMask_UVMode`。 */
+uniform int audiolink_mask_uv_mode : hint_enum("主 UV", "UV1", "UV2", "UV3") = 0;
+/** 把音频值接到第二贴层的 Alpha；对应 lilToon `_AudioLink2Main2nd`。 */
+uniform bool audiolink_2_main_2nd = false;
+/** 把音频值接到第三贴层的 Alpha；对应 lilToon `_AudioLink2Main3rd`。 */
+uniform bool audiolink_2_main_3rd = false;
+/** 把音频值接到主自发光的 Alpha；对应 lilToon `_AudioLink2Emission`。 */
+uniform bool audiolink_2_emission = false;
+/** 把音频值叠加到主自发光渐变相位；对应 lilToon `_AudioLink2EmissionGrad`。 */
+uniform bool audiolink_2_emission_grad = false;
+/** 把音频值接到第二层自发光的 Alpha；对应 lilToon `_AudioLink2Emission2nd`。 */
+uniform bool audiolink_2_emission_2nd = false;
+/** 把音频值叠加到第二层自发光渐变相位；对应 lilToon `_AudioLink2Emission2ndGrad`。 */
+uniform bool audiolink_2_emission_2nd_grad = false;
+/** 用音频值驱动顶点位移；对应 lilToon `_AudioLink2Vertex`。 */
+uniform bool audiolink_2_vertex = false;
+/** 顶点模式的 UV 模式，取值同 `audiolink_uv_mode`；对应 `_AudioLinkVertexUVMode`。 */
+uniform int audiolink_vertex_uv_mode : hint_enum("固定偏移", "按视角", "UV 旋转", "遮罩 RG", "遮罩阈值", "按距离") = 1;
+/** 顶点模式的 UV 参数；对应 `_AudioLinkVertexUVParams`。 */
+uniform vec4 audiolink_vertex_uv_params = vec4(0.25, 0.0, 0.0, 0.125);
+/** 顶点模式的起点（物体空间）；对应 `_AudioLinkVertexStart`。 */
+uniform vec3 audiolink_vertex_start = vec3(0.0);
+/** 顶点位移：XYZ=固定方向、W=沿法线方向的强度；对应 `_AudioLinkVertexStrength`。 */
+uniform vec4 audiolink_vertex_strength = vec4(0.0, 0.0, 0.0, 1.0);
+/** 是否改用本地贴图而非全局频谱；对应 lilToon `_AudioLinkAsLocal`。 */
+uniform bool audiolink_as_local = false;
+/** 本地频谱贴图；对应 lilToon `_AudioLinkLocalMap`。 */
+uniform sampler2D audiolink_local_map : hint_default_black, filter_linear_mipmap, repeat_enable;
+/** 本地贴图参数：X=速度、Y=缩放、Z=偏移；对应 `_AudioLinkLocalMapParams`。 */
+uniform vec4 audiolink_local_map_params = vec4(120.0, 1.0, 0.0, 0.0);
+
 group_uniforms Gem;
 #ifdef LILTOON_GEM
 /**

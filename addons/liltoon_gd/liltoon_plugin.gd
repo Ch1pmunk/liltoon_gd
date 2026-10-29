@@ -12,6 +12,7 @@ const TextureBaker := preload("res://addons/liltoon_gd/editor/liltoon_texture_ba
 const Optimizer := preload("res://addons/liltoon_gd/editor/liltoon_optimizer.gd")
 const Settings := preload("res://addons/liltoon_gd/editor/liltoon_setting.gd")
 const Startup := preload("res://addons/liltoon_gd/editor/liltoon_startup.gd")
+const AudioLink := preload("res://addons/liltoon_gd/audio/liltoon_audio_link.gd")
 
 const MATERIAL_DIR := "res://materials"
 const MATERIAL_BASE_NAME := "liltoon_material"
@@ -37,6 +38,7 @@ func _enter_tree() -> void:
 	add_tool_menu_item("liltoon_gd: 烘焙选中材质的主色贴图…", _on_bake_material)
 	add_tool_menu_item("liltoon_gd: 分析选中材质的优化建议", _on_optimize_material)
 	add_tool_menu_item("liltoon_gd: 全局设置…", _on_show_settings)
+	add_tool_menu_item("liltoon_gd: 启用 AudioLink 全局参数", _on_setup_audiolink)
 
 
 func _exit_tree() -> void:
@@ -331,6 +333,15 @@ func _on_show_settings() -> void:
 	dialog.popup_centered(Vector2i(420, 320))
 	dialog.confirmed.connect(dialog.queue_free)
 	dialog.canceled.connect(dialog.queue_free)
+
+
+func _on_setup_audiolink() -> void:
+	# AudioLink 依赖三个工程级全局 uniform；迁移到新项目时需要执行一次。
+	var changed: bool = AudioLink.ensure_globals()
+	var text := "AudioLink 全局参数已写入工程设置（重启编辑器后生效）。" if changed \
+		else "AudioLink 全局参数已存在，无需重复写入。"
+	text += "\n\n还需两步：\n1. 项目设置 → 自动加载，添加 res://addons/liltoon_gd/audio/liltoon_audio_link.gd\n2. 材质里勾选 use_audiolink，并按需打开 audiolink_2_emission / audiolink_2_vertex 等路由"
+	_show_dialog("liltoon_gd AudioLink", text)
 
 
 func _first_liltoon_material(inst: GeometryInstance3D) -> ShaderMaterial:
