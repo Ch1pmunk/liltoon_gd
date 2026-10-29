@@ -1049,6 +1049,14 @@ uniform bool matcap_perspective = false;
  */
 uniform bool matcap_zrot_cancel = true;
 /**
+ * 第二槽 MatCap 抵消相机滚转；对应 lilToon `_MatCap2ndZRotCancel`（默认 1）。
+ */
+uniform bool matcap_2nd_zrot_cancel = true;
+/**
+ * 第三槽 MatCap 抵消相机滚转（本项目扩展槽位，与主槽语义一致）。
+ */
+uniform bool matcap_3rd_zrot_cancel = true;
+/**
  * 背面是否显示 MatCap，对应 liltoon 的 _MatCapBackfaceMask。
  */
 uniform bool matcap_backface_mask = false;
@@ -2185,5 +2193,9 @@ uniform vec4 gem_env_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
  * 粒子色：在特定视角角度上叠加的闪烁色；对应 lilToon `_GemParticleColor`（HDR）。
  */
 uniform vec4 gem_particle_color : source_color = vec4(4.0, 4.0, 4.0, 1.0);
+/**
+ * 粒子闪烁图案的频率：越大亮点越密；对应 lilToon `_GemParticleLoop`（默认 8）。
+ */
+uniform float gem_particle_loop : hint_range(0.1, 40.0, 0.1) = 8.0;
 
 group_uniforms;

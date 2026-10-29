@@ -157,15 +157,16 @@ float lil_shade_3rd_step(float ndl, vec2 uv) {
     return clamp(smoothstep(shade_3rd_threshold - edge, shade_3rd_threshold + edge, ndl), 0.0, 1.0);
 }
 
+// 把视空间法线旋到"无相机滚转"的基上（三个 MatCap 槽共用）。
+vec3 lil_matcap_zrot_normal(vec3 view_normal) {
+    vec2 up_xy = lil_matcap_up;
+    vec2 right_xy = vec2(up_xy.y, -up_xy.x);
+    return vec3(dot(view_normal.xy, right_xy), dot(view_normal.xy, up_xy), view_normal.z);
+}
+
 vec3 lil_sample_matcap(vec3 view_normal, float perspective, vec2 uv1) {
     // matcap_zrot_cancel 对应 _MatCapZRotCancel：抵消相机滚转，保持 MatCap 竖直。
-    // 用世界上方向在视空间的投影建立"无滚转"基，把法线 XY 旋回该基。
-    vec3 matcap_n = view_normal;
-    if (matcap_zrot_cancel) {
-        vec2 up_xy = lil_matcap_up;
-        vec2 right_xy = vec2(up_xy.y, -up_xy.x);
-        matcap_n = vec3(dot(view_normal.xy, right_xy), dot(view_normal.xy, up_xy), view_normal.z);
-    }
+    vec3 matcap_n = matcap_zrot_cancel ? lil_matcap_zrot_normal(view_normal) : view_normal;
     vec2 matcap_uv = matcap_n.xy * 0.5 * perspective + 0.5;
     // 对应 liltoon 的 _MatCapBlendUV1：在球面 UV 与 UV1 之间插值。
     matcap_uv = mix(matcap_uv, uv1, matcap_blend_uv1);
@@ -173,13 +174,15 @@ vec3 lil_sample_matcap(vec3 view_normal, float perspective, vec2 uv1) {
 }
 
 vec3 lil_sample_matcap_2nd(vec3 view_normal, float perspective, vec2 uv1) {
-    vec2 matcap_uv = view_normal.xy * 0.5 * perspective + 0.5;
+    vec3 matcap_n = matcap_2nd_zrot_cancel ? lil_matcap_zrot_normal(view_normal) : view_normal;
+    vec2 matcap_uv = matcap_n.xy * 0.5 * perspective + 0.5;
     matcap_uv = mix(matcap_uv, uv1, matcap_2nd_blend_uv1);
     return textureLod(matcap_texture_2nd, matcap_uv, matcap_2nd_lod).rgb * matcap_2nd_color.rgb;
 }
 
 vec3 lil_sample_matcap_3rd(vec3 view_normal, float perspective) {
-    vec2 matcap_uv = view_normal.xy * 0.5 * perspective + 0.5;
+    vec3 matcap_n = matcap_3rd_zrot_cancel ? lil_matcap_zrot_normal(view_normal) : view_normal;
+    vec2 matcap_uv = matcap_n.xy * 0.5 * perspective + 0.5;
     return textureLod(matcap_texture_3rd, matcap_uv, matcap_3rd_lod).rgb * matcap_3rd_color.rgb;
 }
 

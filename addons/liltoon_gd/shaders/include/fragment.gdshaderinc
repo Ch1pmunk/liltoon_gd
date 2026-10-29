@@ -640,7 +640,7 @@ void fragment() {
 
         // 粒子闪烁：三个轴向视角分量各做一个阶跃图案，相乘得稀疏亮点。
         // 原版用 _GemParticleLoop 控制频率；该项不在对齐清单内，这里用固定值 8。
-        float gem_loop = 8.0;
+        float gem_loop = gem_particle_loop;
         vec3 gem_v = VIEW;
         float gem_nv1 = abs(dot(NORMAL, gem_v));
         float gem_nv2 = abs(dot(NORMAL, gem_v.yzx));
