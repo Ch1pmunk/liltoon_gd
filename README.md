@@ -10,7 +10,9 @@
 >
 > **本项目是非官方移植**，与 lilToon 作者无隶属关系。名称中的 `_gd` 用于区分平台。
 >
-> **功能覆盖情况**：lilToon 的 578 项材质属性中已对齐 434 项；剩余 144 项全部是 Godot 引擎机制无法表达的部分——
+> **功能覆盖情况**：lilToon 的 578 项材质属性中已对齐 434 项。此处"已对齐"指**参数语义、
+> 取值范围、默认值与关键场景表现一致**；未做与原版的逐项行为等价验证（需 Unity 对照环境），
+> 因此不宣称像素级等价。剩余 144 项全部是 Godot 引擎机制无法表达的部分——
 > Unity 渲染状态（Blend/Stencil/ZTest/Offset/ColorMask/Cull）、曲面细分、VR 视差、
 > VRChat Light Volumes、Unity 各 pass 专属，以及 Godot `SPECULAR` 为标量导致的反射染色/反射法线。
 > 每一项的理由都记在 `DEVELOPMENT_PRINCIPLES.md` §9。
