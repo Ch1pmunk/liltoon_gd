@@ -298,7 +298,7 @@ A2C 用 `set_alpha_to_mask()` 或面板开关。
 
 ## 十二、演示场景
 
-`addons/liltoon_gd/demo/` 下有 36 个演示/验证场景，每个功能一个 lab：
+`addons/liltoon_gd/demo/` 下有 37 个演示/验证场景，每个功能一个 lab：
 
 | 场景 | 演示 |
 |---|---|
