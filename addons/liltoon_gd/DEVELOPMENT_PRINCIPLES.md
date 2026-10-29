@@ -95,7 +95,7 @@ uniform float shade_threshold : hint_range(0.0, 1.0, 0.01) = 0.5;
 ## 7. 描述补齐与校验
 
 - 历史参数若缺少描述，应在下一次修改该 shader 时补齐。
-- 当前覆盖：主材质统一由 `uniforms.gdshaderinc` 声明 **623** 个 uniform（含 sampler），描边变体另由 `outline_common.gdshaderinc` 共用 4 个采样器 + 若干标量；`shaders/extra/` 的折射/宝石/假阴影各自声明。全部描述由 `shader_doc_parser.gd` 注入到属性行的值控件。
+- 当前覆盖（**以脚本输出为准，不在本文写死条数**）：`uniforms.gdshaderinc` 主材质 592 个 uniform（含 sampler）、`outline_common.gdshaderinc` 描边 36 个、合计 628；`shaders/extra/` 的折射/宝石/假阴影另有少量专有声明，`audit_consistency.py` 的「代码参数」把它们算进去后为 **630**，`audit_dead_params.py` 统计有消费方的为 **625**。三个数字口径不同属正常，改动后跑脚本核对即可。全部描述由 `shader_doc_parser.gd` 注入到属性行的值控件。
 - 覆盖率的权威数字以 `python tools/audit_consistency.py` 输出的「代码参数」为准，本文不再写死具体条数，避免反复过期。
 - 校验方式：`tools/smoke_test.gd` 会比对 include 中声明的 uniform 与解析出的描述条目，缺一条即失败；编辑器内可再用 gdmcp 抽查 `EditorProperty.tooltip_text` 必须保持 `property|...` 形式（即未被插件改写），且每个属性行至少有一个子控件带描述。
 - 新增参数后，覆盖率必须保持 100%。
@@ -184,7 +184,7 @@ Godot 的 spatial shader 与 Unity 表面着色器的语义不同，`light()` �
 | 毛发透明模式 | 已实现 | 新增 `liltoon_fur_multi_transparent.gdshader`（`blend_mix` + 平滑 alpha），演示可切换裁切/透明；透明模式在 6 层下仍为 60 FPS |
 | 无光照 / 单色光照 | 已实现 | `use_unlit` 把主色写入 EMISSION 并把 ALBEDO 置 0，同时在 `light()` 末尾清零光照；`monochrome_lighting` 用光色亮度替代彩色 |
 | SSS 厚度 | 近似 | `sss_thickness_texture` 的 R 通道乘到透射项上，仍非真实次表面散射；默认强度 0 不影响旧材质 |
-| AudioLink | 不做 | liltoon 的 AudioLink 依赖 Udon / Unity 音频链路；Godot 端需要自建音频总线 + 全局 uniform + 频谱驱动，属于新子系统，不纳入“还原原版”范围 |
+| AudioLink | **已作废的旧结论** | 本条曾写「不做」，与本表上方「AudioLink 已对齐（自建服务）22 项全覆盖」直接冲突。**以那一行为准**：已用 `audio/liltoon_audio_link.gd` 自建频谱服务实现。保留本行仅为追溯，不得再引用「不做」这一结论 |
 | UndoRedo | 已验证 | 毛发与材质替换用 `EditorUndoRedoManager`（custom_context）；编辑器内实测撤销/重做通过 |
 | 贴花序列帧 | 已实现 | 2nd/3rd 支持列/行/速度，按整帧跳变；不支持每层不同播放方向与曲线 |
 | 后处理描边的渲染器差异 | 已验证 | `hint_normal_roughness_texture` 只有 Forward+ 支持，Mobile/Compatibility 会编译失败；现提供 `post_outline_screen_basic`（纯深度），场景默认用降级版，Forward+ 下脚本自动换成完整版 |
@@ -243,12 +243,19 @@ Godot 的 spatial shader 与 Unity 表面着色器的语义不同，`light()` �
 | 毛发数学细节 | 实测 | `INSTANCE_CUSTOM` 只在 vertex 可用（fragment 使用会编译失败）；方向强度 1.0 会让毛沿切向生长、轮廓外扩不明显，默认应取 0.2–0.4 |
 | 毛发集成 | 已提供 | 编辑器菜单「为选中网格添加毛发壳层」生成 MultiMesh 子节点；改主体颜色后用「同步毛发参数」。毛发不能只靠单个材质实现 |
 | 毛发 / 绒毛 | 已实现（近似） | Godot 无几何着色器；`next_pass` 仅支持一层（实测），改用 **MultiMesh + `INSTANCE_CUSTOM.r`** 承载 1–12 层，单 draw call；风动由 TIME 驱动顶点摆动；壳层 `cast_shadow=OFF` 由主体投影；描边用独立节点且宽度必须大于毛长；6 层 60 FPS；12 层透明模式同样 60 FPS（球体规模） |
+| Rim 混合模式（`_RimBlendMode`） | 已对齐 | `rim_blend_mode` 四式对齐 `lilBlendColor`（`lil_common_functions.hlsl:325-335`）。受光路径在 `light()` 内计算，`EMISSION` 在该函数里不可读（实测 `Unknown identifier: EMISSION`），dst 只能取 `ALBEDO`：模式 1（Add）时 `out-dst = src*srcA` 与 dst 无关，**逐位等价于旧实现**；0/2/3 是"以基色为 dst"的近似，差异只在同时启用自发光/MatCap 时可见 |
+| 反射混合模式（`_ReflectionBlendMode`） | 已对齐（限 cubemap） | 自定义立方体贴图路径可完整四式（dst = `ALBEDO + EMISSION`，精确）；**引擎 IBL 分支只能是加法**——反射色由引擎在 shader 之后合成，shader 取不到 dst，属引擎机制限制，不是未做 |
+| **A 类扩展的裁定记录**（2026-10-29） | 已裁定 | 依 §0「A 类能不做就不做；顺手实现的单列特色新功能，不混入对齐主线」与用户"按原则即可裁定"的授权，对三项 A 类扩展定论：① MatCap 第三槽（`matcap_3rd_*`）——保留、不深入、不参与对齐计数；② `use_shade_ramp` + `shade_ramp`（原版 `_Ramp` 是空参数）——保留为独立实现，标注"自有效果"，不宣称对齐；③ TriMask 接主通道（原版仅 lite pass 采样）——**有意偏离**，保持默认 `use_tri_mask=false`，若要严格还原可改为不接主通道。以上三项若需推翻请明示 |
+| ID 遮罩 / UDIM 的丢弃阶段 | 已修正 | 原实现把命中顶点挪到裁剪空间外（顶点阶段丢弃），与相邻未丢弃顶点组成跨边界三角形会**渲染成长条**（2026-10-29 实测）。现统一改为 `fragment()` 里 `discard`，顶点阶段不再写 `POSITION`。`udim_discard_mode` 的 0/1（顶点/片元）保留为原版语义登记，实际都在片元丢弃。可视化证据：`demo/id_mask_lab.tscn` 三对照 |
+| META pass 的 Emission 输出 | 引擎限制（放行） | 原版把 Albedo/Emission 写给 Unity 烘焙器（`lil_pass_meta.hlsl:9-11`）。Godot 烘焙由 LightmapGI 承担，实测：本项目材质与 `StandardMaterial3D` 对照在烘焙后都**没有可测的自发光反弹**（绿偏 < 3/255），说明是引擎烘焙器不做发光面反弹，不是 shader 漏写。替代：`VoxelGI`/`SDFGI`（运行时读 EMISSION）或手工补 Static 灯 |
+
 ## 10. 阶段治理与自审（2026-10-23 起）
 
 - **规模**：每阶段单一主题、交付项 ≤ 3；毛发、AudioLink 这类子系统单独成阶段。超出范围拆到下一阶段，不硬塞。
 - **流程**：设计（参数表 + 风险）→ 实现 → 自审 → 证据归档 → 用户确认 → 下一阶段。未完成自审不得开工下一阶段。
 - **完成定义（DoD）**：编译与运行无错误；行为对齐 lilToon 2.4.1（差异须写明）；参数描述 100% 且预设同步；冒烟测试全绿；§0/§9 与 ROADMAP 同步；证据归档。
 - **证据**：每阶段至少在 `docs/evidence/阶段N/` 留 1 张关键截图 + 一段说明（目录随阶段创建）；未归档视为未完成。
+  **本条自 P5 起生效**：P0–P4 是早期阶段，当时尚未确立本规则，其证据目录不存在属预期，不追溯补图（2026-10-29 裁定）。
 - **阶段外变更**：记入 ROADMAP 文末 `SCOPE LOG`，注明影响阶段；新增风险记入 `RISKS`，下阶段复核。
 - **自审清单**：残留代码、脚本语法、冒烟测试、实机渲染、参数覆盖、文档同步、风险与遗留项。
 - **编辑器内生成场景**：若刚给 shader 加过 uniform，脚本构建场景前必须用 `ResourceLoader.CACHE_MODE_REPLACE` 重新加载 shader；否则编辑器缓存的旧 uniform 列表会让新参数被静默丢弃。

@@ -18,6 +18,7 @@ run/max_fps=30
 [autoload]
 
 LiltoonAudioLink="*res://addons/liltoon_gd/audio/liltoon_audio_link.gd"
+MCPRuntimeProbe="*uid://bsg12huaf1u5i"
 
 [display]
 
@@ -33,7 +34,7 @@ project/assembly_name="新建游戏项目"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/liltoon_gd/plugin.cfg")
+enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg", "res://addons/liltoon_gd/plugin.cfg")
 
 [liltoon_gd]
 

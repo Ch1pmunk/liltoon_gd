@@ -10,9 +10,9 @@
 >
 > **本项目是非官方移植**，与 lilToon 作者无隶属关系。名称中的 `_gd` 用于区分平台。
 >
-> **功能覆盖情况**：lilToon 的 578 项材质属性中已对齐 434 项。此处"已对齐"指**参数语义、
+> **功能覆盖情况**：lilToon 的 578 项材质属性中已对齐 436 项。此处"已对齐"指**参数语义、
 > 取值范围、默认值与关键场景表现一致**；未做与原版的逐项行为等价验证（需 Unity 对照环境），
-> 因此不宣称像素级等价。剩余 144 项全部是 Godot 引擎机制无法表达的部分——
+> 因此不宣称像素级等价。剩余 142 项全部是 Godot 引擎机制无法表达的部分——
 > Unity 渲染状态（Blend/Stencil/ZTest/Offset/ColorMask/Cull）、曲面细分、VR 视差、
 > VRChat Light Volumes、Unity 各 pass 专属，以及 Godot `SPECULAR` 为标量导致的反射染色/反射法线。
 > 每一项的理由都记在 `DEVELOPMENT_PRINCIPLES.md` §9。
@@ -298,7 +298,7 @@ A2C 用 `set_alpha_to_mask()` 或面板开关。
 
 ## 十二、演示场景
 
-`addons/liltoon_gd/demo/` 下有 37 个演示/验证场景，每个功能一个 lab：
+`addons/liltoon_gd/demo/` 下有 40 个演示/验证场景，每个功能一个 lab：
 
 | 场景 | 演示 |
 |---|---|
@@ -309,6 +309,7 @@ A2C 用 `set_alpha_to_mask()` 或面板开关。
 | `glitter_lab` / `aniso_lab` / `aniso_matcap_lab` | 闪点 / 各向异性 |
 | `normal_specular_lab` | 法线与高光 |
 | `rim_lab` / `fade_rim_lab` / `fade_lab` | 边缘光 / 距离淡出 |
+| `blend_modes_lab` | Rim 混合模式四式（Normal / Add / Screen / Multiply） |
 | `emission_lab` / `material_extra_lab` | 自发光 / 主色渐变/背面/抖动 |
 | `decal_lab` / `feature_lab` | 贴花 / 综合效果 |
 | `dissolve_lab` | 溶解 |
@@ -317,5 +318,7 @@ A2C 用 `set_alpha_to_mask()` 或面板开关。
 | `refraction_lab` / `gem_lab` / `fakeshadow_lab` | 折射 / 宝石 / 假阴影 |
 | `audiolink_lab` | 音频律动（自发光 / 顶点） |
 | `a2c_lab` / `variant_lab` / `quality_lab` | A2C / 变体 / 画质档位 |
+| `emission_gi_lab` | 自发光是否参与 LightmapGI 烘焙（A 本项目 / B 无自发光 / C 标准材质对照） |
+| `id_mask_lab` | ID 遮罩按编号隐藏区域（A 标准材质 / B 无遮罩 / C 隐藏 ID=1、3 对照） |
 
 直接运行时加 `-- shot` 可截图到 `user://<场景名>.png`（部分场景支持 `-- bench`）。

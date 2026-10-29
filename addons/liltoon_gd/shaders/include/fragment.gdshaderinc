@@ -48,9 +48,25 @@ void fragment() {
         ALBEDO *= mix(vec3(1.0), COLOR.rgb, vertex_color_strength);
     }
 
-    // UDIM 片元模式（_UDIMDiscardMode = 1）：逐像素丢弃。
-    if (use_udim_discard && udim_discard_mode == 1 && lil_udim_discard(UV, UV2, UV2, UV2)) {
+    // UDIM / ID 遮罩：一律在片元阶段 discard。
+    // 顶点阶段把"被丢弃"的顶点挪到裁剪空间外（如 (2,2,2,1)）会与相邻未丢弃顶点组成
+    // 跨边界的三角形，渲染成长条（2026-10-29 实测，mask_lab 的 ID 遮罩就是这样坏掉的）。
+    // 只要"部分顶点"要丢弃，就只能用片元 discard；整块丢弃时两者外观一致。
+    // 因此 `udim_discard_mode` 的 0/1（顶点/片元）现在只是原版语义登记，实际都在片元丢弃。
+    if (use_udim_discard && lil_udim_discard(UV, UV2, UV2, UV2)) {
         discard;
+    }
+    if (use_id_mask) {
+        // 原版来源含 UV3–UV7 与 VertexID；Godot 只有 UV/UV2，故 0=主 UV、1/2=UV2
+        int idv = int(id_mask_from == 0 ? UV.x : UV2.x);
+        bool id_hit = lil_id_mask_hit(idv, id_mask_is_bitmap, false);
+        if (id_mask_controls_dissolve) {
+            // 前后态都为真才算命中（对应原版 idMasked && priorIdMasked）
+            id_hit = id_hit && lil_id_mask_hit(idv, id_mask_is_bitmap, true);
+        }
+        if (id_hit) {
+            discard;
+        }
     }
 
     // 三通道特性遮罩（_TriMask）：R 遮 MatCap、G 遮边缘光、B 遮自发光。
@@ -457,7 +473,12 @@ void fragment() {
         }
 
         float rim_alpha = rim_apply_transparency ? clamp(ALPHA, 0.0, 1.0) : 1.0;
-        EMISSION += rim_rgb * rim_factor * rim_color.a * rim_intensity * rim_mask_value * rim_alpha * tri_mask_value.g;
+        // 无光照路径没有 light()，光色恒为 1；混合方式与受光路径共用同一套 lil_blend_color。
+        vec3 rim_dst = ALBEDO + EMISSION;
+        vec3 rim_src = rim_rgb * rim_intensity * rim_mask_value * rim_alpha * tri_mask_value.g;
+        float rim_src_alpha = clamp(rim_factor * rim_color.a, 0.0, 1.0);
+        vec3 rim_out = lil_blend_color(rim_dst, rim_src, vec3(rim_src_alpha), rim_blend_mode);
+        EMISSION += rim_out - rim_dst;
     }
 
     float ao_value = 1.0;
@@ -481,7 +502,13 @@ void fragment() {
         vec3 cube_color = texture(reflection_cubemap, cube_reflect_dir).rgb * reflection_cubemap_color.rgb;
         float cube_fresnel = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 2.0);
         vec3 cube_lit = mix(cube_color, cube_color * ALBEDO * 2.0, clamp(reflection_cubemap_lighting, 0.0, 1.0));
-        EMISSION += cube_lit * cube_fresnel * (reflectance + 0.05);
+        // 自定义立方体贴图是 shader 内采样，dst 已知（ALBEDO + 已累计的 EMISSION），
+        // 因此可以完整实现四种混合模式；引擎 IBL 分支取不到 dst，只能保持加法。
+        vec3 cube_dst = ALBEDO + EMISSION;
+        vec3 cube_src = cube_lit;
+        float cube_src_alpha = clamp(cube_fresnel * (reflectance + 0.05), 0.0, 1.0);
+        vec3 cube_out = lil_blend_color(cube_dst, cube_src, vec3(cube_src_alpha), reflection_blend_mode);
+        EMISSION += cube_out - cube_dst;
         METALLIC = 0.0;
         ROUGHNESS = 1.0;
         SPECULAR = 0.0;

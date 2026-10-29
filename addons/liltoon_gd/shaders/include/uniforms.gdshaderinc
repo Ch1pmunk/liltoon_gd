@@ -898,6 +898,11 @@ uniform float rim_indir_strength : hint_range(0.0, 1.0, 0.001) = 0.0;
  * 边缘光按透明度预乘。
  */
 uniform bool rim_apply_transparency = false;
+/**
+ * 边缘光与已有着色的混合方式，对应 liltoon 的 _RimBlendMode；默认 1（相加）与原行为完全一致。
+ * 0 = Normal（用边缘光替换表面色）、1 = Add（相加）、2 = Screen、3 = Multiply（正片叠底，此时边缘光不受光）。
+ */
+uniform int rim_blend_mode : hint_range(0, 3, 1) = 1;
 
 /**
  * MatCap。
@@ -1486,6 +1491,12 @@ uniform samplerCube reflection_cubemap : hint_default_black;
  * 自定义反射立方体贴图的颜色乘子；对应 lilToon `_ReflectionCubeColor`（默认黑色=不生效）。
  */
 uniform vec4 reflection_cubemap_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+/**
+ * 反射与已有着色的混合方式，对应 liltoon 的 _ReflectionBlendMode；默认 1（相加）与原行为一致。
+ * 0 = Normal、1 = Add、2 = Screen、3 = Multiply。**只有启用 use_reflection_cubemap 时才会生效**：
+ * 引擎 IBL 的反射由引擎在 shader 之后合成，shader 取不到 dst，那条路径只能是加法。
+ */
+uniform int reflection_blend_mode : hint_range(0, 3, 1) = 1;
 /**
  * 自定义反射立方体贴图的受光程度，1 跟随光照色；对应 lilToon `_ReflectionCubeEnableLighting`（默认 1）。
  */

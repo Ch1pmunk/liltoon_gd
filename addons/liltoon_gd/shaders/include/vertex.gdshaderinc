@@ -251,25 +251,8 @@ void vertex() {
         VERTEX += (audiolink_vertex_strength.xyz + NORMAL * audiolink_vertex_strength.w) * al_vertex;
     }
 
-    // 顶点级丢弃（UDIM 顶点模式 / ID 遮罩）。
-    // 关键：Godot 在**编译期**决定是否使用自定义 POSITION；一旦判定使用，
-    // 只在条件分支里赋值会导致条件不成立时 POSITION 未定义 → 整个网格消失。
-    // 因此这里必须**无条件赋值**（代价是这家 shader 一律走自定义投影路径）。
-    bool vertex_drop = false;
-    if (use_udim_discard && udim_discard_mode == 0) {
-        vertex_drop = lil_udim_discard(UV, UV2, UV2, UV2);
-    }
-    if (use_id_mask) {
-        // 原版来源含 UV3–UV7 与 VertexID；Godot 只有 UV/UV2，故 0=主 UV、1/2=UV2
-        int idv = int(id_mask_from == 0 ? UV.x : UV2.x);
-        bool cur_hit = lil_id_mask_hit(idv, id_mask_is_bitmap, false);
-        if (id_mask_controls_dissolve) {
-            // 前后态都为真才算命中（对应原版 idMasked && priorIdMasked）
-            cur_hit = cur_hit && lil_id_mask_hit(idv, id_mask_is_bitmap, true);
-        }
-        vertex_drop = vertex_drop || cur_hit;
-    }
-    POSITION = vertex_drop
-        ? vec4(2.0, 2.0, 2.0, 1.0)
-        : PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
+    // 顶点阶段**不做丢弃**（曾用 POSITION 把顶点挪出裁剪空间，实测会把相邻三角形
+    // 拉成长条，见硬教训 13）。UDIM / ID 遮罩统一在 fragment() 里 discard。
+    // 这里也不再写 POSITION：一旦写过它，Godot 就认定这家 shader 走自定义投影路径，
+    // 需要无条件赋值才能安全，风险高且无收益。
 }

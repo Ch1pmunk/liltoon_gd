@@ -1,5 +1,8 @@
 // liltoon_gd - 表面采样辅助函数（只使用 uniform 与片元可用的内建变量）
 
+// 混合函数在 lighting() 与 fragment() 里都要用，放在两者之前引入。
+#include "res://addons/liltoon_gd/shaders/include/blend.gdshaderinc"
+
 vec2 lil_uv(vec2 source_uv) {
     return source_uv * main_uv_scale;
 }

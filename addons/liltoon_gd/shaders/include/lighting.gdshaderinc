@@ -176,10 +176,23 @@ void light() {
         // rim_enable_lighting 是程度值（0=恒定亮度，1=完全跟随光色），对应 _RimEnableLighting 的 Range(0,1)。
         vec3 rim_light = mix(vec3(1.0), light_rgb, rim_enable_lighting);
         float rim_alpha = rim_apply_transparency ? clamp(ALPHA, 0.0, 1.0) : 1.0;
-        SPECULAR_LIGHT += rim_rgb * rim_light * rim_dir * rim_color.a * rim_intensity
-            * rim_mask_value * rim_alpha * specular_alpha;
-        SPECULAR_LIGHT += rim_indir_color.rgb * rim_light * rim_indir * rim_indir_color.a * rim_indir_strength
-            * rim_intensity * rim_mask_value * rim_alpha * specular_alpha;
+        float rim_gain = rim_intensity * rim_mask_value * rim_alpha * specular_alpha;
+        // 对齐 lilBlendColor：dst 是"写 rim 之前的表面色"（原版 fd.col.rgb）。
+        // 注意：light() 里读不到 EMISSION（实测 "Unknown identifier: EMISSION"），
+        // 所以这里只能取 ALBEDO 作 dst —— 混合模式=1（相加）时 out-dst = src*srcA，
+        // 与 dst 取值无关，**逐位等价于旧实现**；0/2/3 则是"以基色为 dst"的近似，
+        // 差异只出现在同时启用了自发光/MatCap 的材质上（已在 §9 登记）。
+        vec3 rim_dst = ALBEDO;
+        // 主色：src = 颜色 × 光色，srcA = 方向因子 × 颜色 alpha（对应 lil_common_frag.hlsl:1696）
+        vec3 rim_src = rim_rgb * rim_light * rim_gain;
+        float rim_src_alpha = clamp(rim_dir * rim_color.a, 0.0, 1.0);
+        vec3 rim_out = lil_blend_color(rim_dst, rim_src, vec3(rim_src_alpha), rim_blend_mode);
+        SPECULAR_LIGHT += (rim_out - rim_dst);
+        // 内侧色：同上（对应 :1697），dst 用上一式的结果，保持原版的顺序叠加
+        vec3 rim_indir_src = rim_indir_color.rgb * rim_light * rim_indir_strength * rim_gain;
+        float rim_indir_alpha = clamp(rim_indir * rim_indir_color.a, 0.0, 1.0);
+        vec3 rim_indir_out = lil_blend_color(rim_out, rim_indir_src, vec3(rim_indir_alpha), rim_blend_mode);
+        SPECULAR_LIGHT += (rim_indir_out - rim_out);
     }
 
     // 逆光：按视角与光源的夹角在轮廓上叠加透射光，对应 liltoon 的 lilBacklight。
