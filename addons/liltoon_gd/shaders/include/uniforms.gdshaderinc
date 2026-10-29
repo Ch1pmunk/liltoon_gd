@@ -2095,6 +2095,42 @@ uniform float refraction_strength : hint_range(-1.0, 1.0, 0.01) = 0.1;
  */
 uniform float refraction_fresnel_power : hint_range(0.01, 10.0, 0.01) = 0.5;
 
+group_uniforms DecalConvention;
+// 贴花的导入/烘焙期约定。原版 shader 同样只声明不读取，真正消费方是纹理烘焙器与 Inspector；
+// 本项目由 editor/liltoon_texture_baker.gd 消费。保留为材质属性以便预设/材质导入携带这些信息。
+/** 第二贴层是否按贴花语义处理（不做重复平铺）；对应 lilToon `_Main2ndTexIsDecal`。 */
+uniform bool decal_2nd_is_decal = false;
+/** 第二贴层只保留左半（uv.x < 0.5），右半裁掉；对应 `_Main2ndTexIsLeftOnly`。 */
+uniform bool decal_2nd_is_left_only = false;
+/** 第二贴层只保留右半（uv.x > 0.5），左半裁掉；对应 `_Main2ndTexIsRightOnly`。 */
+uniform bool decal_2nd_is_right_only = false;
+/** 第二贴层按 MSDF（多通道有符号距离场）解码，取三通道中位数；对应 `_Main2ndTexIsMSDF`。 */
+uniform bool decal_2nd_is_msdf = false;
+/** 第二贴层把左半镜像复制到右半；对应 `_Main2ndTexShouldCopy`。 */
+uniform bool decal_2nd_should_copy = false;
+/** 第二贴层复制时翻转方向；对应 `_Main2ndTexShouldFlipCopy`。 */
+uniform bool decal_2nd_should_flip_copy = false;
+/** 第二贴层镜像半区是否翻转；对应 `_Main2ndTexShouldFlipMirror`。 */
+uniform bool decal_2nd_should_flip_mirror = false;
+/** 第二贴层附加子参数（X=UV 缩放、Y=偏移、Z=旋转、W=保留）；对应 `_Main2ndTexDecalSubParam`。 */
+uniform vec4 decal_2nd_sub_param = vec4(1.0, 0.0, 0.0, 0.0);
+/** 第三贴层是否按贴花语义处理；对应 `_Main3rdTexIsDecal`。 */
+uniform bool decal_3rd_is_decal = false;
+/** 第三贴层只保留左半；对应 `_Main3rdTexIsLeftOnly`。 */
+uniform bool decal_3rd_is_left_only = false;
+/** 第三贴层只保留右半；对应 `_Main3rdTexIsRightOnly`。 */
+uniform bool decal_3rd_is_right_only = false;
+/** 第三贴层按 MSDF 解码；对应 `_Main3rdTexIsMSDF`。 */
+uniform bool decal_3rd_is_msdf = false;
+/** 第三贴层把左半镜像复制到右半；对应 `_Main3rdTexShouldCopy`。 */
+uniform bool decal_3rd_should_copy = false;
+/** 第三贴层复制时翻转方向；对应 `_Main3rdTexShouldFlipCopy`。 */
+uniform bool decal_3rd_should_flip_copy = false;
+/** 第三贴层镜像半区是否翻转；对应 `_Main3rdTexShouldFlipMirror`。 */
+uniform bool decal_3rd_should_flip_mirror = false;
+/** 第三贴层附加子参数；对应 `_Main3rdTexDecalSubParam`。 */
+uniform vec4 decal_3rd_sub_param = vec4(1.0, 0.0, 0.0, 0.0);
+
 group_uniforms IDMask;
 /** 是否启用 ID 遮罩系统；对应 lilToon `_IDMaskCompile`。 */
 uniform bool use_id_mask = false;
