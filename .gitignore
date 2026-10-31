@@ -15,6 +15,9 @@ tools/
 ROADMAP.md
 移植说明.md
 
+# 本地测试模型（个人素材，不入库也不分发）
+models/
+
 # Python
 __pycache__/
 *.py[cod]
